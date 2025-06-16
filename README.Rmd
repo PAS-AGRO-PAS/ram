@@ -1,29 +1,39 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/",
+  out.width="100%"
+)
+```
 
 ## `ram` Package
 
 This repository provides:
 
-1.  An R package **`ram`** for Resource Allocation Modeling using linear
-    programming.  
-2.  A Shiny application that lets you interactively specify resource
-    constraints, activities, and solve the LP model.
+1. An R package **`ram`** for Resource Allocation Modeling using linear programming.  
+2. A Shiny application that lets you interactively specify resource constraints, activities, and solve the LP model.
 
-------------------------------------------------------------------------
+---
 
 ## Installation
 
 You can install the development version directly from GitHub:
 
-``` r
+```{r ins, eval=FALSE}
 # install.packages("remotes")
 remotes::install_github("https://github.com/PAS-AGRO-PAS/ram")
 ```
 
 Once installed, load the package:
 
-``` r
+```{r}
 library(ram)
 ```
 
@@ -31,33 +41,30 @@ library(ram)
 
 The Shiny app provides a GUI to:
 
-1.  Download CSV templates for resources & activities
+1. Download CSV templates for resources & activities
 
-2.  Upload your own data or edit in‐place
+2. Upload your own data or edit in‐place
 
-3.  Add / Remove rows dynamically
+3. Add / Remove rows dynamically
 
-4.  Solve the LP (maximize or minimize)
+4. Solve the LP (maximize or minimize)
 
-5.  View optimal activity levels, resource usage, objective value, plots
-    & sensitivity
+5. View optimal activity levels, resource usage, objective value, plots & sensitivity
 
 Launch it with:
 
-``` r
+```{r, eval=FALSE}
 # From within R or RStudio:
 ram::run_app()
 ```
 
-A browser window will open at
-<a href="http://127.0.0.1:xxxx/" class="uri">http://127.0.0.1:xxxx/</a>.
+A browser window will open at http://127.0.0.1:xxxx/.
 
 ## Package Vignette
 
-For a worked example (the Mediterranean Mixed Farm), see the package
-vignette:
+For a worked example (the Mediterranean Mixed Farm), see the package vignette:
 
-``` r
+```{r, eval=FALSE}
 vignette("WinterCropsAreaBounds", package = "ram")
 ```
 
@@ -73,9 +80,10 @@ This illustrates:
 
 ## Example Usage in R
 
+
 Below is a minimal example of programmatic use:
 
-``` r
+```{r, eval=FALSE}
 library(ram)
 
 # 1) Define resources

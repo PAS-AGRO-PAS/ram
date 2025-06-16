@@ -1,0 +1,14 @@
+resource,availability,direction
+land_total,15,<=
+labor_total,100,<=
+nitrogen_total,250,<=
+oat_min,2,>=
+oat_max,5,<=
+barley_min,1,>=
+barley_max,6,<=
+fava_min,2,>=
+fava_max,5,<=
+lupin_min,2,>=
+lupin_max,10,<=
+sheep_max,40,<=
+lambs_min,35,>=

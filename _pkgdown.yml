@@ -1,0 +1,31 @@
+# _pkgdown.yml
+template:
+  params:
+    bootswatch: flatly
+
+navbar:
+  structure:
+    left:
+    - home
+    - reference
+    - articles       # your vignettes will appear here
+    - news
+  type: inverse
+
+articles:
+
+  - title: "Winter Crops Optimisation"
+    contents:
+      - "WinterCrops"
+
+  - title: "Mixed Farm Optimisation"
+    contents:
+      - "MixedFarm"
+
+  - title: "Winter Crops Optimization with Area Bounds"
+    contents:
+      - "WinterCropsAreaBounds"
+  
+  - title: "User Manual - ram Shiny Application"
+    contents:
+      - "ramShiny"

@@ -1,0 +1,181 @@
+---
+title: "Winter Crops Optimization with Area Bounds"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Winter Crops Optimization with Area Bounds}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+library(ram)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Problem Statement
+
+A Mediterranean farm has 15 ha of land, 350 h of labor and 500 kg of available nitrogen.
+It can grow four winter crops:
+
+Oat (a gramineae)
+
+Barley (a gramineae)
+
+Fava bean (a legume)
+
+Lupin (a legume)
+
+Crop data (per ha):
+
+| Crop      | N fertilizer (kg) | Labor (h) | Gross margin (€) |
+| :-------- | :---------------: | :-------: | ---------------: |
+| Oat       |         80        |     20    |              400 |
+| Barley    |        100        |     25    |              450 |
+| Lupin     |         0         |     15    |              350 |
+| Fava bean |         30        |     30    |              500 |
+
+
+We wish to maximize total gross margin subject to resource constraints.
+Furthermore, each crop has a required area range (ha):
+
+Oat: 2 ≤ area ≤ 8
+
+Barley: 1 ≤ area ≤ 6
+
+Fava: 3 ≤ area ≤ 7
+
+Lupin: 2 ≤ area ≤ 5
+
+## Step 1: Define Resource Constraints (flexible min/max for each crop)
+
+```{r}
+# Step 1: Define Resource Constraints (flexible min/max for each crop)
+resources <- define_resources(
+  resources = c(
+    # global totals
+    "land", "labor", "nitrogen",
+    # per‐crop bounds
+    "oat_min",   "oat_max",
+    "barley_min","barley_max",
+    "lupin_min", "lupin_max",
+    "fava_min",  "fava_max"
+  ),
+  availability = c(
+    # totals
+     15,    350,    500,
+    #  bounds
+      2,      8,
+      1,      6,
+      3,      7,
+      2,      5
+  ),
+  direction = c(
+    # totals all <=
+    "<=",   "<=",   "<=",
+    # minimums >=
+    ">=",   "<=",
+    ">=",   "<=",
+    ">=",   "<=",
+    ">=",   "<="
+  )
+)
+
+print(resources)
+```
+
+### Step 2: Define Activities (Crop Choices)
+
+```{r}
+# Step 2: Define Activities
+activity_requirements_matrix <- matrix(
+  c(
+    # land usage (ha/ha)
+     1, 1, 1, 1,
+    # labor   (h/ha)
+    20,25,15,30,
+    # nitrogen (kg N/ha)
+    80,100, 0,30,
+    # bounds rows for technical matrix:
+    #   for oat_min  (1 for oat else 0)
+     1,0,0,0,
+    #   for oat_max
+     1,0,0,0,
+    # barley_min
+     0,1,0,0,
+    # barley_max
+     0,1,0,0,
+    # fava_min
+     0,0,1,0,
+    # fava_max
+     0,0,1,0,
+    # lupin_min
+     0,0,0,1,
+    # lupin_max
+     0,0,0,1
+  ),
+  nrow = nrow(resources),
+  byrow = TRUE,
+  dimnames = list(
+    resources$resource,
+    c("oat", "barley", "lupin", "fava")
+  )
+)
+
+objective <- c(oat = 400, barley = 450, lupin = 350, fava = 500)
+
+activities <- define_activities(
+  activities = colnames(activity_requirements_matrix),
+  activity_requirements_matrix = activity_requirements_matrix,
+  objective = objective
+)
+
+activities
+```
+
+### Step 3: Build and Solve the Model
+
+```{r}
+# Step 3: Build and Solve the Model
+model <- create_ram_model(resources, activities)
+solution <- solve_ram(model, direction = "max")
+```
+
+### Step 4: Results
+
+```{r}
+dat <- data.frame(
+  activity = names(solution$optimal_activities),
+  level    = round(as.numeric(solution$optimal_activities), 1)
+)
+
+DT::datatable(
+  dat,
+  rownames = FALSE,
+  options = list(
+    autoWidth = TRUE,
+    columnDefs = list(
+      list(width = '2cm', targets = 0),  # first column (activity)
+      list(width = '2cm', targets = 1)   # second column (level)
+    )
+  )
+) |>
+  DT::formatRound(
+    columns = "level",
+    digits  = 2
+  )
+```
+
+### Step 4: Results
+
+```{r}
+summary_ram(solution)
+cat("Maximum gross margin (EUR):", solution$objective_value, "\n")
+```
+
+```{r, fig.width=10, fig.height=5}
+plot_ram(solution)
+```
+

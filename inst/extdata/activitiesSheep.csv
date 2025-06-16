@@ -1,0 +1,6 @@
+activity,land_total,labor_total,nitrogen_total,oat_min,oat_max,barley_min,barley_max,fava_min,fava_max,lupin_min,lupin_max,sheep_max,lambs_min,objective
+oat,1,5,20,2,5,0,0,0,0,0,0,0,0,400
+barley,1,4,25,0,0,1,6,0,0,0,0,0,0,380
+fava,1,6,4,0,0,0,0,2,5,0,0,0,0,430
+lupinus,1,6,2,0,0,0,0,0,0,2,1,0,0,800
+sheep,0,1.0,0,0,0,0,0,0,0,0,0,40,1.5,85

@@ -1,0 +1,95 @@
+---
+title: "Winter Crops Optimisation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Winter Crops Optimisation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(ram)
+```
+
+## Problem Statement
+
+A Mediterranean farm plans to allocate land to 4 winter crops:
+- Gramineae: Oat, Barley
+- Legumes: Fava bean, Lupin
+
+## Scenario:
+
+- Total land available: 15 ha
+- Total labor hours: 350 hours
+- Total nitrogen: 500 kg
+- Oat: 2 ≤ area ≤ 8 ha
+- Barley: 1 ≤ area ≤ 6 ha
+- Fava bean: 3 ≤ area ≤ 7 ha
+- Lupin: 2 ≤ area ≤ 5 ha
+
+### Objective: Maximize total gross margin (profit)
+
+| Crop      | N fertilizer need (kg $N/ha$) | Work labor ($h/ha$) | Gross margin ($€/ha$) |
+| :-------- | :-------------------------: | :----------------: | :-----------------: |
+| Oat       |              80             |         20         |         400         |
+| Barley    |             100             |         25         |         450         |
+| Lupin     |              0              |         15         |         350         |
+| Fava bean |              30             |         30         |         500         |
+
+
+- **Objective**: Maximize total gross margin.
+
+## Step 1: Define Resource Constraints (flexible min\max for each crop)
+
+```{r}
+# Step 1: Define Resource Constraints (flexible min/max for each crop)
+resources <- data.frame(
+  resource     = c("land", "labor","nitrogen"),
+  availability = c(15, 350, 500),
+  direction    = c("<=", "<=","<=")
+)
+print(resources)
+```
+
+### Step 2: Define Activities (Crop Choices)
+
+```{r}
+# Step 2: Define Activities 
+activities <- data.frame(
+  activity  = c("oat", "barley",  "lupin", "fava"),
+  land      = c(1, 1, 1, 1),
+  labor     = c(20, 25, 15, 30),
+  nitrogen  = c(80, 100, 0, 30),
+  objective = c(400, 450, 350, 500)
+)
+print(activities)
+```
+
+### Step 3: Build and Solve the Model
+
+```{r}
+# Step 3: Build and Solve the Model
+model <- create_ram_model(resources, activities)
+solution <- solve_ram(model, direction = "max")
+```
+
+### Step 4: Results
+
+```{r}
+summary_ram(solution)
+cat("Maximum gross margin (EUR):", solution$objective_value, "\n")
+```
+
+
+```{r, fig.width=10, fig.height=5}
+plot_ram(solution)
+```
+
+

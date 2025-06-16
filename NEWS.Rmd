@@ -1,0 +1,20 @@
+---
+output: github_document
+---
+
+# [ram 0.0.0.9000](https://github.com/PAS-AGRO-PAS/ram/releases/tag/v.0.0.0.9000) <small>2025-06-26</small>
+
+## Initial release
+- Core functions:  
+  - `define_resources()` – create resource constraint definitions  
+  - `define_activities()` – set up activity/resource‐usage matrix & objective  
+  - `create_ram_model()` – build the RAM (linear programming) model  
+  - `solve_ram()` – solve model (max/min)  
+  - `sensitivity_ram()` – compute dual prices & bounds (where supported)  
+  - `plot_ram()` – quick plot of solution
+- Vignette “Mediterranean Mixed Farm” demonstrating a five‐crop + pasture example.
+- RStudio add‐in / Golem Shiny app scaffolding (UI & server) for interactive use.
+
+---
+
+*For complete details and examples, see the package documentation or the GitHub repository.*

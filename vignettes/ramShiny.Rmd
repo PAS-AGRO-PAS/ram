@@ -1,0 +1,82 @@
+---
+title: "User Manual - ram Shiny Application"
+author: "The PAS-AGRO-PAS Development Team"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{User Manual - ram Shiny Application}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+```
+
+# Introduction
+
+Welcome to the user manual for the **PAS-AGRO-PAS** Shiny application. This application was developed to optimize the allocation of agricultural resources and activities. This manual will guide you through the application's features and how to use them.
+
+# Instructions for Use
+
+## Templates & Upload
+
+In the sidebar, you will find sections to download CSV templates and upload your own CSV files.
+
+- **Download Templates**: Click the buttons to download the resource and activity templates.
+- **Upload Files**: Use the inputs to upload your resource and activity CSV files.
+
+## Add / Remove Rows
+
+You can add or remove rows in the resource and activity tables.
+
+- **Add Rows**: Click the "Add Resource" or "Add Activity" buttons.
+- **Remove Rows**: Select a row in the table and click "Remove Resource" or "Remove Activity".
+
+## Solve the Model
+
+Set the objective (maximize or minimize) and click the "Solve Model" button to solve the optimization model.
+
+# Features
+
+## Resource and Activity Tables
+
+The tables are interactive and allow direct editing. You can modify the values of availability, direction, and resource requirements.
+
+- Resources
+Define each constraint by row:
+  - resource (e.g. land, labor, nitrogen or bound like oat_min)
+  - availability (numeric)
+  - direction (<= or >=)
+
+- Activities
+Each row is an activity (e.g. a crop) with columns:
+  - resource coefficients (how much of each resource/unit)
+  - objective (per-unit margin or cost)
+
+## Optimization Results
+
+After solving the model, you can view the results in the following tabs:
+
+- **Optimal Solution**: Shows the optimal levels of each activity and the objective value.
+- **Activity Plot**: Interactive plot with the optimal levels of each activity.
+- **Sensitivity Analysis**: Shows how the results change with variations in parameters.
+
+# Exporting Results
+
+You can export the current data from the resource and activity tables as CSV files using the download buttons.
+Download Table buttons appear above each interactive table.
+Exports exactly what you see, in CSV form, ready for your records.
+
+---
+
+## Contact & Further Reading
+
+For advanced usage and code examples see the package’s GitHub repository,
+or the formal documentation vignettes included in the ram package.
+
+If you have questions or encounter bugs, please open an issue at
+https://github.com/PAS-AGRO-PAS/ram/issues.
