@@ -26,7 +26,7 @@ This repository provides:
 
 Install the development version from GitHub:
 
-```{r}
+```{r, eval=FALSE}
 # install.packages("remotes")
 remotes::install_github("PAS-AGRO-PAS/ram")
 ```
@@ -43,7 +43,7 @@ library(ram)
 
 Use the unified launcher with mode control:
 
-```{r}
+```{r, eval=FALSE}
 ram::run_app()                 # default "solve" mode
 ram::run_app(mode = "builder") # explicitly launch "builder" mode
 ```
@@ -72,6 +72,7 @@ library(ram)
 ### Define the resources
 
 ```{r}
+library(ram)
 res <- define_resources(
   resources    = c("land","labor","nitrogen",
                    "oat_min","oat_max",
@@ -79,8 +80,8 @@ res <- define_resources(
                    "lupin_min","lupin_max",
                    "fava_min","fava_max",
                    "pasture_min","pasture_max"),
-  availability = c(15,350,500, 2,8, 1,6, 2,5, 1,3, 2,4),
-  direction    = c("<=", "<=", "<=", ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=", ">=")
+  availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2 ,4),
+  direction    = c("<=","<=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=")
 )
 
 res
@@ -133,7 +134,7 @@ summary_ram(solution)
 
 For a practical demonstration, see:
 
-```{r}
+```{r, eval=FALSE}
 vignette("WinterCropsAreaBounds", package = "ram")
 ```
 

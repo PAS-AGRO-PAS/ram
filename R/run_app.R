@@ -1,6 +1,7 @@
 # R/run_apps.R
 
 #' Launch the RAM app in solver mode
+#' @importFrom golem with_golem_options
 #' @param ... Additional golem options passed to the app (via `get_golem_options()`)
 #' @export
 run_app_solve <- function(...) {

@@ -11,7 +11,7 @@ Imports:
     readxl,
     dplyr,
     plotly,
-    shiny,
+    shiny (>= 1.5.0),
     DT,
     golem,
     lpSolve,
