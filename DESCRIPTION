@@ -1,7 +1,7 @@
 Package: ram
 Type: Package
 Title: Resource Allocation Models for Agro-Pastoral Systems
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Vasco", "Cadavez", email = "vcadavez@ipb.pt", role = c("aut", "cre")),
     person("Ursula", "Gonzales-Barron", email = "ubarron@ipb.pt", role = "aut"))
@@ -16,7 +16,8 @@ Imports:
     golem,
     lpSolve,
     rmarkdown,
-    config
+    config,
+    bslib
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests:

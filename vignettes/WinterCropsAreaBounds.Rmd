@@ -179,3 +179,52 @@ cat("Maximum gross margin (EUR):", solution$objective_value, "\n")
 plot_ram(solution)
 ```
 
+## Scenario Analysis
+
+Below we explore what happens if we vary total nitrogen and labour availability.
+
+
+```{r}
+library(ram)
+
+# 1) Re‐load your data.frames from the vignette/example:
+resources   # data.frame with columns resource, availability, direction
+activities  # data.frame with columns activity, land, labor, nitrogen, …, objective
+
+# 2) Build the ram specs:
+res0 <- define_resources(
+  resources    = resources$resource,
+  availability = resources$availability,
+  direction    = resources$direction
+)
+
+# NOTE THE TRANSPOSE HERE!
+tech_mat <- t( as.matrix(
+   activities[, setdiff(names(activities), c("activity","objective"))]
+) )
+
+act0 <- define_activities(
+  activities                   = activities$activity,
+  activity_requirements_matrix = tech_mat,
+  objective                    = activities$objective
+)
+
+# 3) Define your scenario grid:
+scenarios <- list(
+  nitrogen = c(300, 400, 500),
+  labor    = c(300, 350)
+)
+
+# 4) Run them:
+scen_df <- run_scenarios(res0, act0, scenarios, direction = "max") 
+print(scen_df)
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(scen_df, aes(x=factor(nitrogen), y=objective, color=factor(labor), group=factor(labor))) +
+  geom_line() + geom_point() +
+  labs(x="Nitrogen (kg)", y="Max Gross Margin (€)", color="Labor (h)")
+```
+

@@ -14,7 +14,7 @@ plot_ram <- function(solution) {
     x = names(acts),
     y = acts,
     type = "bar",
-    marker = list(color = "skyblue"),
+    marker = list(color = "blue"),
     hoverinfo = "x+y",
     name = "Level"
   ) %>%
