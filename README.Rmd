@@ -66,7 +66,14 @@ The app uses `with_golem_options()` to pass the mode correctly and initializes e
 ```{r, eval=FALSE}
 library(ram)
 
+<<<<<<< HEAD
 # 1) Define resources
+=======
+### Define the resources
+
+```{r}
+library(ram)
+>>>>>>> 8a925e850a7c20d58813d8bb2e8c9aa966993404
 res <- define_resources(
   resources    = c("land","labor","nitrogen",
                    "oat_min","oat_max",
@@ -74,7 +81,11 @@ res <- define_resources(
                    "lupin_min","lupin_max",
                    "fava_min","fava_max",
                    "pasture_min","pasture_max"),
+<<<<<<< HEAD
   availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2,4),
+=======
+  availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2 ,4),
+>>>>>>> 8a925e850a7c20d58813d8bb2e8c9aa966993404
   direction    = c("<=","<=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=")
 )
 
