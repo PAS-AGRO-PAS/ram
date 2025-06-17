@@ -59,10 +59,10 @@ initializes external resources (logo, theming) automatically.
 
 # Programmatic Usage Example
 
+## Define the resources
+
 ``` r
 library(ram)
-
-# 1) Define resources
 res <- define_resources(
   resources    = c("land","labor","nitrogen",
                    "oat_min","oat_max",
@@ -73,8 +73,12 @@ res <- define_resources(
   availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2,4),
   direction    = c("<=","<=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=")
 )
+res
+```
 
-# 2) Define activities matrix
+## Define the activities
+
+``` r
 tech <- rbind(
   land         = rep(1,5),
   labor        = c(20,25,15,30,10),
@@ -92,17 +96,29 @@ acts <- define_activities(
   activity_requirements_matrix = tech,
   objective = c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
 )
+```
 
-# 3) Build and solve
+## Build and solve the model
+
+``` r
 model   <- create_ram_model(res, acts)
 solution <- solve_ram(model, direction = "max")
+solution
+```
 
-# 4) Inspect results
+## Inspect results
+
+``` r
 print(solution$optimal_activities)
 print(solution$objective_value)
 print(sensitivity_ram(solution))
-plot_ram(solution)
 summary_ram(solution)
+```
+
+## Plot the solution
+
+``` r
+plot_ram(solution)
 ```
 
 ------------------------------------------------------------------------
