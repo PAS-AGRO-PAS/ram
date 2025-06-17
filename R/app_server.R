@@ -71,9 +71,7 @@ app_server <- function(input, output, session) {
   # -- Solve sidebar logic (modularized) --
   mod_solve_sidebar_server(
     id = "solve",
-    rv = rv,
-    resources_proxy = resources_proxy,
-    activities_proxy = activities_proxy
+    rv = rv
   )
   
   # -- Render and edit solve-mode tables --

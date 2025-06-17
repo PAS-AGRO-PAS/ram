@@ -1,7 +1,18 @@
+# R/mod_builder_sidebar_server.R
 
 #' builder_sidebar Server Functions
-#'
-#' @noRd 
+#' 
+#' @param input,output,session Internal parameters for {shiny}.
+#'     DO NOT REMOVE.
+#' @import DT
+#' @import plotly
+#' @importFrom ram define_resources define_activities create_ram_model solve_ram
+#' @importFrom utils read.csv write.csv
+#' @importFrom stats setNames
+#' @importFrom dplyr bind_rows
+#' @import shiny
+#' @noRd
+
 mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_proxy) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns

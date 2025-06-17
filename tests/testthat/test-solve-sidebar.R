@@ -1,7 +1,10 @@
 # tests/testthat/test-solve-sidebar.R
+
+#' @import shiny
+#' @import DT
 library(testthat)
 library(shiny)
-
+library(DT)
 testServer(
   mod_solve_sidebar_server,
   args = list(
@@ -10,9 +13,7 @@ testServer(
       resources = data.frame(resource="r1", availability=1, direction="<=", stringsAsFactors=FALSE),
       activities = data.frame(activity="a1", r1=1, objective=5, stringsAsFactors=FALSE),
       solution = NULL
-    ),
-    resources_proxy = dataTableProxy("resources_table"),
-    activities_proxy = dataTableProxy("activities_table")
+    )
   ),
   {
     # Simulate upload of resources

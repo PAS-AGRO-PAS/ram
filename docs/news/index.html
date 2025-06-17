@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ram</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9001</span>
       </span>
     </div>
 
@@ -45,28 +45,51 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.9000" id="ram-0009000-2025-06-26">
-<a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v.0.0.0.9000" class="external-link">ram 0.0.0.9000</a> <small>2025-06-26</small>
-<a class="anchor" aria-label="anchor" href="#ram-0009000-2025-06-26"></a></h2>
+<h2 class="page-header" data-toc-text="0.0.0.9001" id="ram-0009001-2025-06-30">
+<a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9001" class="external-link">ram 0.0.0.9001</a> <small>2025-06-30</small>
+<a class="anchor" aria-label="anchor" href="#ram-0009001-2025-06-30"></a></h2>
 <div class="section level3">
-<h3 id="initial-release-0-0-0-9000">Initial release<a class="anchor" aria-label="anchor" href="#initial-release-0-0-0-9000"></a></h3>
+<h3 id="rocket-minor-release-0-0-0-9001">🚀 Minor Release<a class="anchor" aria-label="anchor" href="#rocket-minor-release-0-0-0-9001"></a></h3>
+<div class="section level4">
+<h4 id="wrench-new-features--enhancements-0-0-0-9001">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#wrench-new-features--enhancements-0-0-0-9001"></a></h4>
+<ul><li>
+<strong>Unified app launcher</strong>: <code>run_app(mode = "solve")</code> or <code>run_app(mode = "builder")</code>, which sets <code>app_mode</code> via <a href="https://thinkr-open.github.io/golem/" class="external-link">golem</a> and ensures external resources are initialized correctly.</li>
+<li>
+<strong>Modular UI/Server</strong>:
+<ul><li>Sidebar UI &amp; logic extracted into <code>mod_solve_sidebar_ui()</code> and <code>mod_solve_sidebar_server()</code> for cleaner separation and easier maintenance.</li>
+<li>Main panels refactored into <code>solve_panels()</code> and <code>builder_panels()</code> helper functions.</li>
+</ul></li>
+<li>
+<strong>Branding &amp; Theming</strong>:
+<ul><li>Introduced <a href="https://rstudio.github.io/bslib/" class="external-link">bslib</a> theming with <code>_brand.yml</code> support.</li>
+<li>Added live light/dark mode toggle via <code>input_dark_mode()</code> and dynamic switching of logo (dark or light variant).</li>
+<li>Responsive theme customization now part of <code>app_ui.R</code>.</li>
+</ul></li>
+<li>
+<strong>Logo Integration</strong>:
+<ul><li>Header now displays brand logo from <code>app/www/logo-[dark|light].svg</code>, auto-switching based on theme mode.</li>
+</ul></li>
+<li>
+<strong>Improved Sidebar Layout</strong>:
+<ul><li>Sidebar now uses bslib <code>sidebarLayout()</code>, applies consistent design across themes, and toggles collapse automatically.</li>
+</ul></li>
+<li>
+<strong>Documentation Updates</strong>:
+<ul><li>
+<code>README.Rmd</code> refreshed to document the modular architecture, unified launcher, theming options, and branding support.</li>
+</ul></li>
+</ul><hr></div>
+</div>
+<div class="section level3">
+<h3 id="jigsaw-previous--0-0-0-9001">🧩 Previous (0.0.0.9000 – 2025-06-26)<a class="anchor" aria-label="anchor" href="#jigsaw-previous--0-0-0-9001"></a></h3>
 <ul><li>Core functions:
 <ul><li>
-<code><a href="../reference/define_resources.html">define_resources()</a></code> – create resource constraint definitions<br></li>
-<li>
-<code><a href="../reference/define_activities.html">define_activities()</a></code> – set up activity/resource‐usage matrix &amp; objective<br></li>
-<li>
-<code><a href="../reference/create_ram_model.html">create_ram_model()</a></code> – build the RAM (linear programming) model<br></li>
-<li>
-<code><a href="../reference/solve_ram.html">solve_ram()</a></code> – solve model (max/min)<br></li>
-<li>
-<code><a href="../reference/sensitivity_ram.html">sensitivity_ram()</a></code> – compute dual prices &amp; bounds (where supported)<br></li>
-<li>
-<code><a href="../reference/plot_ram.html">plot_ram()</a></code> – quick plot of solution</li>
+<code><a href="../reference/define_resources.html">define_resources()</a></code>, <code><a href="../reference/define_activities.html">define_activities()</a></code>, <code><a href="../reference/create_ram_model.html">create_ram_model()</a></code>, <code><a href="../reference/solve_ram.html">solve_ram()</a></code>, <code><a href="../reference/sensitivity_ram.html">sensitivity_ram()</a></code>, <code><a href="../reference/plot_ram.html">plot_ram()</a></code>
+</li>
 </ul></li>
-<li>Vignette “Mediterranean Mixed Farm” demonstrating a five‐crop + pasture example.</li>
-<li>RStudio add‐in / Golem Shiny app scaffolding (UI &amp; server) for interactive use.</li>
-</ul><hr><p><em>For complete details and examples, see the package documentation or the GitHub repository.</em></p>
+<li>Mediterranean Mixed Farm vignette.</li>
+<li>Go-modeled Shiny app (“solve” and “builder” scaffolding).</li>
+</ul><hr><p><em>For full details and usage examples, see the documentation or the <a href="https://github.com/PAS-AGRO-PAS/ram" class="external-link">GitHub repo</a>.</em></p>
 </div>
 </div>
   </div>

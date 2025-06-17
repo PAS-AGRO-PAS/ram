@@ -1,157 +1,142 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.Rmd. Please edit this file -->
 
-## `ram` Package
+# `ram` Package
 
 This repository provides:
 
 1.  An R package **`ram`** for Resource Allocation Modeling using linear
-    programming.  
-2.  A Shiny application that lets you interactively specify resource
-    constraints, activities, and solve the LP model.
+    programming, featuring sensitivity analysis via
+    `lpSolve::compute.sens = TRUE`.
+2.  A `{golem}`-based Shiny app with dynamic UI modes (“solve” &
+    “builder”), interactive tables, visualizations, and export
+    capabilities.
 
 ------------------------------------------------------------------------
 
-## Installation
+# Installation
 
-You can install the development version directly from GitHub:
+Install the development version from GitHub:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("https://github.com/PAS-AGRO-PAS/ram")
+remotes::install_github("PAS-AGRO-PAS/ram")
 ```
 
-Once installed, load the package:
+Then load the package:
 
 ``` r
 library(ram)
 ```
 
-## Quick Start: Using the Shiny App
+------------------------------------------------------------------------
 
-The Shiny app provides a GUI to:
+# Quick Start: Launch the App
 
-1.  Download CSV templates for resources & activities
-
-2.  Upload your own data or edit in‐place
-
-3.  Add / Remove rows dynamically
-
-4.  Solve the LP (maximize or minimize)
-
-5.  View optimal activity levels, resource usage, objective value, plots
-    & sensitivity
-
-Launch it with:
+Use the unified launcher with mode control:
 
 ``` r
-# From within R or RStudio:
-ram::run_app()
+ram::run_app()                 # default "solve" mode
+ram::run_app(mode = "builder") # explicitly launch "builder" mode
 ```
 
-A browser window will open at
-<a href="http://127.0.0.1:xxxx/" class="uri">http://127.0.0.1:xxxx/</a>.
+The app uses `with_golem_options()` to pass the mode correctly and
+initializes external resources (logo, theming) automatically.
 
-## Package Vignette
+------------------------------------------------------------------------
 
-For a worked example (the Mediterranean Mixed Farm), see the package
-vignette:
+# App Highlights
 
-``` r
-vignette("WinterCropsAreaBounds", package = "ram")
-```
+- **Dynamic theming** via `{bslib}` with brand-based colors and
+  light/dark toggle.
+- **Dynamic logo** adapts to theme and displays in the app header.
+- **Solve Mode**: upload or edit CSVs, define objectives, run the LP,
+  view results & sensitivity, and explore interactive plots.
+- **Builder Mode**: define resources and activities on-the-fly, then
+  export CSV or XLSX.
 
-This illustrates:
+------------------------------------------------------------------------
 
-- Defining flexible resource constraints
-
-- Building the activity matrix
-
-- Solving the LP and interpreting results
-
-- Performing sensitivity analysis on shadow prices
-
-## Example Usage in R
-
-Below is a minimal example of programmatic use:
+# Programmatic Usage Example
 
 ``` r
 library(ram)
 
 # 1) Define resources
 res <- define_resources(
-  resources    = c(
-    "land","labor","nitrogen",
-    "oat_min","oat_max",
-    "barley_min","barley_max",
-    "lupin_min","lupin_max",
-    "fava_min","fava_max",
-    "pasture_min","pasture_max"
-  ),
-  availability = c(
-    15, 350, 500,   # totals
-     2,   8,        # oat
-     1,   6,        # barley
-     2,   5,        # lupin
-     1,   3,        # fava
-     2,   4         # pasture
-  ),
-  direction = c(
-    "<=", "<=", "<=",    # totals
-    ">=", "<=",          # oat
-    ">=", "<=",          # barley
-    ">=", "<=",          # lupin
-    ">=", "<=",          # fava
-    ">=", "<="           # pasture
-  )
+  resources    = c("land","labor","nitrogen",
+                   "oat_min","oat_max",
+                   "barley_min","barley_max",
+                   "lupin_min","lupin_max",
+                   "fava_min","fava_max",
+                   "pasture_min","pasture_max"),
+  availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2,4),
+  direction    = c("<=","<=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=")
 )
 
 # 2) Define activities matrix
-# after you've done `res <- define_resources(…)`
-
 tech <- rbind(
-  land         = c(  1,  1,  1,  1,  1),
-  labor        = c( 20, 25, 15, 30, 10),
-  nitrogen     = c( 80,100,  0, 30,  0),
-  oat_min      = c(  1,  0,  0,  0,  0),
-  oat_max      = c(  1,  0,  0,  0,  0),
-  barley_min   = c(  0,  1,  0,  0,  0),
-  barley_max   = c(  0,  1,  0,  0,  0),
-  lupin_min    = c(  0,  0,  1,  0,  0),
-  lupin_max    = c(  0,  0,  1,  0,  0),
-  fava_min     = c(  0,  0,  0,  1,  0),
-  fava_max     = c(  0,  0,  0,  1,  0),
-  pasture_min  = c(  0,  0,  0,  0,  1),
-  pasture_max  = c(  0,  0,  0,  0,  1)
+  land         = rep(1,5),
+  labor        = c(20,25,15,30,10),
+  nitrogen     = c(80,100,0,30,0),
+  oat_min      = c(1,0,0,0,0),  oat_max = c(1,0,0,0,0),
+  barley_min   = c(0,1,0,0,0),  barley_max = c(0,1,0,0,0),
+  lupin_min    = c(0,0,1,0,0),  lupin_max = c(0,0,1,0,0),
+  fava_min     = c(0,0,0,1,0),  fava_max = c(0,0,0,1,0),
+  pasture_min  = c(0,0,0,0,1),  pasture_max = c(0,0,0,0,1)
 )
 colnames(tech) <- c("oat","barley","lupin","fava","pasture")
 
-# profit margins per hectare
-obj <- c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
-
 acts <- define_activities(
-  activities                   = colnames(tech),
+  activities = colnames(tech),
   activity_requirements_matrix = tech,
-  objective                    = c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
+  objective = c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
 )
 
-# 3) Build & solve
-model    <- create_ram_model(res, acts)
+# 3) Build and solve
+model   <- create_ram_model(res, acts)
 solution <- solve_ram(model, direction = "max")
 
 # 4) Inspect results
 print(solution$optimal_activities)
-
 print(solution$objective_value)
-
 print(sensitivity_ram(solution))
 plot_ram(solution)
+summary_ram(solution)
 ```
 
-## Contributing
+------------------------------------------------------------------------
 
-Please open issues or pull requests on GitHub.
+# Package Vignettes
 
-## License
+For a practical demonstration, run:
 
-This project is licensed under the MIT License. See LICENSE for details.
+``` r
+vignette("WinterCropsAreaBounds", package = "ram")
+```
+
+------------------------------------------------------------------------
+
+# Contributing
+
+Contributions welcome — please [open
+issues](https://github.com/PAS-AGRO-PAS/ram/issues) or submit [pull
+requests](https://github.com/PAS-AGRO-PAS/ram/pulls).
+
+------------------------------------------------------------------------
+
+# License
+
+Licensed under MIT — see
+[LICENSE](https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md).
+
+------------------------------------------------------------------------
+
+# 📝 Summary of Improvements
+
+- Unified `run_app()` respects both `"solve"` and `"builder"` modes.
+- Enhanced branding & light/dark theming via `{bslib}`.
+- Dynamic logo integration in the app header.
+- Clear explanations of both interactive and programmatic workflows.
+- Emphasis on interactive features: plots, sensitivity analysis,
+  exports.

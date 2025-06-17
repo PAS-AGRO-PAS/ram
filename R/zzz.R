@@ -1,13 +1,22 @@
 # R/external_resources.R
 
+#' @noRd
+.onLoad <- function(...) {
+  # Map the URL prefix "/www" to your app's www folder inside inst/app
+  shiny::addResourcePath(
+    "www",
+    system.file("app/www", package = "ram")
+  )
+}
+
 #' Add golem's external resources
 #' @noRd
 #' @import shiny
 #' @importFrom golem add_resource_path bundle_resources activate_js favicon
 golem_add_external_resources <- function(){
-  # Map the URL prefix "/img" to inst/app/www/
+  # Also map "/img" to the same folder if you'd like both URL schemes
   golem::add_resource_path("img", app_sys("app/www"))
-
+  
   tags$head(
     favicon(),
     bundle_resources(
@@ -30,3 +39,7 @@ get_extdata <- function(filename, mustWork = TRUE) {
               filename, package = "ram",
               mustWork = mustWork)
 }
+
+# Avoid conflicts with shiny's versions of dataTableOutput/renderDataTable
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
+NULL

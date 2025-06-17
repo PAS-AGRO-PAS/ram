@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.Rmd. Please edit this file -->
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-## `ram` Package
+# `ram` Package
 
 This repository provides:
 
@@ -22,28 +22,28 @@ This repository provides:
 
 ---
 
-## Installation
+# Installation
 
 Install the development version from GitHub:
 
-```{r}
+```{r, eval=FALSE}
 # install.packages("remotes")
 remotes::install_github("PAS-AGRO-PAS/ram")
 ```
 
 Then load the package:
 
-```{r}
+```{r, eval=FALSE}
 library(ram)
 ```
 
 ---
 
-## Quick Start: Launch the App
+# Quick Start: Launch the App
 
 Use the unified launcher with mode control:
 
-```{r}
+```{r, eval=FALSE}
 ram::run_app()                 # default "solve" mode
 ram::run_app(mode = "builder") # explicitly launch "builder" mode
 ```
@@ -52,7 +52,7 @@ The app uses `with_golem_options()` to pass the mode correctly and initializes e
 
 ---
 
-## App Highlights
+# App Highlights
 
 * **Dynamic theming** via `{bslib}` with brand-based colors and light/dark toggle.
 * **Dynamic logo** adapts to theme and displays in the app header.
@@ -61,17 +61,12 @@ The app uses `with_golem_options()` to pass the mode correctly and initializes e
 
 ---
 
-## Programmatic Usage Example
+# Programmatic Usage Example
 
-### Load the `ram` package:
-
-```{r}
+```{r, eval=FALSE}
 library(ram)
-```
 
-### Define the resources
-
-```{r}
+# 1) Define resources
 res <- define_resources(
   resources    = c("land","labor","nitrogen",
                    "oat_min","oat_max",
@@ -79,16 +74,11 @@ res <- define_resources(
                    "lupin_min","lupin_max",
                    "fava_min","fava_max",
                    "pasture_min","pasture_max"),
-  availability = c(15,350,500, 2,8, 1,6, 2,5, 1,3, 2,4),
-  direction    = c("<=", "<=", "<=", ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=", ">=")
+  availability = c(15, 350, 500,   2,8,       1,6,       2,5,       1,3,       2,4),
+  direction    = c("<=","<=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=", ">=","<=")
 )
 
-res
-```
-
-### Define activity matrix
-
-```{r}
+# 2) Define activities matrix
 tech <- rbind(
   land         = rep(1,5),
   labor        = c(20,25,15,30,10),
@@ -106,20 +96,12 @@ acts <- define_activities(
   activity_requirements_matrix = tech,
   objective = c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
 )
-acts
-```
 
-### Build and solve the model
-
-```{r}
+# 3) Build and solve
 model   <- create_ram_model(res, acts)
 solution <- solve_ram(model, direction = "max")
-solution
-```
 
-### View optimasition results
-
-```{r}
+# 4) Inspect results
 print(solution$optimal_activities)
 print(solution$objective_value)
 print(sensitivity_ram(solution))
@@ -129,32 +111,32 @@ summary_ram(solution)
 
 ---
 
-## Package vignettes
+# Package Vignettes
 
-For a practical demonstration, see:
+For a practical demonstration, run:
 
-```{r}
+```{r, eval=FALSE}
 vignette("WinterCropsAreaBounds", package = "ram")
 ```
 
 ---
 
-## Contributing
+# Contributing
 
-Contributions welcomed - please [open issues](https://github.com/PAS-AGRO-PAS/ram/issues) or submit [pull requests](https://github.com/PAS-AGRO-PAS/ram/pulls) on [GitHub](https://github.com/PAS-AGRO-PAS/ram).
-
----
-
-## License
-
-Licensed under MIT—see [LICENSE](https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md).
+Contributions welcome — please [open issues](https://github.com/PAS-AGRO-PAS/ram/issues) or submit [pull requests](https://github.com/PAS-AGRO-PAS/ram/pulls).
 
 ---
 
-### 📝 Summary of Improvements
+# License
 
-- Unified `run_app()` now respects `"solve"` or `"builder"` modes.
-- Branding & light/dark theming via `{bslib}`.
-- Dynamic logo integration in the header.
-- Clear explanation of both interactive and programmatic interfaces.
-- Emphasized new features like theme toggling, visualizations, and exports.
+Licensed under MIT — see [LICENSE](https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md).
+
+---
+
+# 📝 Summary of Improvements
+
+* Unified `run_app()` respects both `"solve"` and `"builder"` modes.
+* Enhanced branding & light/dark theming via `{bslib}`.
+* Dynamic logo integration in the app header.
+* Clear explanations of both interactive and programmatic workflows.
+* Emphasis on interactive features: plots, sensitivity analysis, exports.
