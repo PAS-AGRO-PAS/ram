@@ -2,23 +2,20 @@
 
 #' The application User-Interface
 #'
-#' @import bslib shiny DT plotly
-#' @noRd
-library(bslib)
-library(shiny)
-library(DT)
-library(plotly)
-
+#' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel mainPanel tabsetPanel uiOutput
+#' @importFrom bslib input_dark_mode bs_theme
+#' @importFrom DT DTOutput
+#' @importFrom plotly plotlyOutput
+#' @importFrom golem get_golem_options
 app_ui <- function(request) {
   mode <- golem::get_golem_options("app_mode")
   if (is.null(mode)) mode <- "solve"
   
-  # Temporarily rename or remove `_brand.yml`
-  # or in app_ui.R:
-  theme = bs_theme(
-    version   = 5, 
-    preset    = "bootstrap", brand = FALSE,
-    bg        = "#ffffff", fg = "#432918",
+  theme <- bs_theme(
+    version   = 5,
+    preset    = "bootstrap",
+    brand     = FALSE,
+    bg        = "#ffffff", fg        = "#432918",
     primary   = "#A3BF4E", secondary = "#CBBBA0",
     success   = "#28a745", info      = "#17a2b8",
     warning   = "#ffc107", danger    = "#dc3545",
@@ -27,21 +24,25 @@ app_ui <- function(request) {
   
   fluidPage(
     theme = theme,
-    title = uiOutput("app_logo"),  # Dynamic logo + app name
     titlePanel(
-      "PAS‑AGRO‑PAS – ram app",
-      windowTitle = "PAS‑AGRO‑PAS – ram app"
+      title = div(
+        img(src = "www/logo.png", height = "60px", style = "margin-right: 10px; vertical-align: middle;"),
+        "Resource Allocation Models"
+      ),
+      windowTitle = "ram app"
     ),
+
     sidebarLayout(
       sidebarPanel(
         width = 3,
-        input_dark_mode(id = "color_mode"),  # Light/dark toggle
+        input_dark_mode(id = "color_mode"),
         if (mode == "solve") {
           mod_solve_sidebar_ui("solve")
         } else {
           mod_builder_sidebar_ui("builder")
         }
       ),
+      
       mainPanel(
         do.call(
           tabsetPanel,
@@ -55,11 +56,10 @@ app_ui <- function(request) {
   )
 }
 
-# Panels for "solve" mode
 solve_panels <- function() {
   list(
     tabPanel("About",
-             h2("How to use the ram app"),
+             h2("How to use the ram app - Solver Mode"),
              HTML('
                  <p>
                     <b>Step 1:</b> <i>Enter your resource constraints</i> in the left panel. You can use the sample template, upload your own CSV, or edit the table directly.<br>
@@ -99,7 +99,7 @@ solve_panels <- function() {
                ),
                tabPanel("Activities",
                         h4("Activity Definitions"),
-                        DT::DTOutput("activities_table"),
+                        DTOutput("activities_table"),
                         downloadButton("download_activities_csv", "Download CSV")
                )
              )
@@ -108,7 +108,7 @@ solve_panels <- function() {
              h2("Optimal Solution"),
              DT::DTOutput("solution_tbl"),
              verbatimTextOutput("objective_val"),
-             plotlyOutput("activity_plot")
+             plotly::plotlyOutput("activity_plot")
     ),
     tabPanel("Sensitivity",
              h2("Sensitivity Analysis"),
@@ -117,13 +117,40 @@ solve_panels <- function() {
   )
 }
 
-# Panels for "builder" mode
 builder_panels <- function() {
   list(
+    tabPanel("About",
+             h2("How to use the ram app - Builder Mode"),
+             HTML('
+             <p>
+                <b>Step 1:</b> <i>Use the sidebar to define your resource constraints</i>. You can start from a blank table or edit pre-loaded examples.<br>
+                <b>Step 2:</b> <i>Add your activities</i>, specifying how each one uses resources (e.g., crops, feeds) and their associated objective values.<br>
+                <b>Step 3:</b> <i>Once both tables are complete</i>, you can export them for later use in the solver app.<br>
+             </p>
+             <p>
+                <b>Resources Table:</b> Each row represents a constraint (e.g., land ≤ 100 ha, labor ≤ 200 hours, nitrogen = 350 Kg).<br>
+                <b>Activities Table:</b> Each row defines an activity, with the corresponding use of each resource and a target value (e.g., cost or profit).<br>
+             </p>
+             <p>
+                <b>Need help?</b> Use the template options in the sidebar to load example data or reset the tables.
+             </p>
+             <hr>
+                <h3>Acknowledgements</h3>
+            <div style="display: flex; align-items: center; margin-bottom:10px;">
+              <img src="www/eu.jpg" height="70px" style="margin-right:15px;">
+              <img src="www/prima.png" height="70px" style="margin-right:15px;">
+              <img src="www/fct.png" height="100px" style="margin-right:15px; background:#000;padding:2px 5px; border-radius:5px;">
+              <img src="www/pasagropas.png" height="150px" style="margin-right:15px;">
+            </div>
+            <p style="font-size:15px;">
+               This research was carried out within the framework of the PAS-AGRO-PAS project. The PAS-AGRO-PAS is part of the PRIMA program supported by the European Union.
+               This project received funding from the Fundação para a Ciência e Tecnologia (FCT), and other National Funding Agencies as part of the PRIMA program.
+             </p>
+             ')
+    ),
     tabPanel("Interactive Builder",
- #           h2("Interactive Builder"),
              p("Use the sidebar to build & export your tables."),
-             h4("Resources Table"), DT::DTOutput("res_tbl"),
+             h4("Resources Table"),  DT::DTOutput("res_tbl"),
              h4("Activities Table"), DT::DTOutput("act_tbl")
     )
   )

@@ -2,23 +2,21 @@
 
 #' Solve Sidebar Server Module
 #'
-#' @description Server logic for solve-mode sidebar (upload, download, solve).
-#' @param id Module namespace ID.
-#' @param rv ReactiveValues list containing `resources`, `activities`, and `solution`.
-#' @noRd
-#' @importFrom shiny moduleServer downloadHandler observeEvent req
-#' @importFrom DT dataTableProxy replaceData
+#' @description Server logic for the “solve” sidebar: download templates,
+#'   upload CSVs, and trigger the solver.
+#' @param id Module namespace ID
+#' @param rv ReactiveValues list containing `resources`, `activities`, and `solution`
+#' @param resources_proxy DT proxy for the `resources_table` in the main UI
+#' @param activities_proxy DT proxy for the `activities_table` in the main UI
+#' @importFrom shiny moduleServer observeEvent downloadHandler req
+#' @importFrom DT replaceData
+#' @importFrom utils read.csv write.csv
 #' @importFrom ram define_resources define_activities create_ram_model solve_ram
-
-mod_solve_sidebar_server <- function(id, rv) {
+#' @noRd
+mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) {
   moduleServer(id, function(input, output, session) {
-    ns <- session$ns
     
-    # Internal proxies for editable tables
-    resources_proxy  <- DT::dataTableProxy("resources_table", session = session)
-    activities_proxy <- DT::dataTableProxy("activities_table", session = session)
-    
-    # Download current resource template
+    # --- Download handlers for current templates ---
     output$download_resource_template <- downloadHandler(
       filename = "resource_template.csv",
       content = function(file) {
@@ -34,8 +32,6 @@ mod_solve_sidebar_server <- function(id, rv) {
         )
       }
     )
-    
-    # Download current activity template
     output$download_activity_template <- downloadHandler(
       filename = "activity_template.csv",
       content = function(file) {
@@ -43,53 +39,49 @@ mod_solve_sidebar_server <- function(id, rv) {
       }
     )
     
-    # Upload resources CSV
+    # --- Upload & replace resources table ---
     observeEvent(input$resource_file, {
       req(input$resource_file)
-      df <- utils::read.csv(input$resource_file$datapath, stringsAsFactors = FALSE)
+      df <- read.csv(input$resource_file$datapath, stringsAsFactors = FALSE)
       req(all(c("resource", "availability", "direction") %in% names(df)))
-      
       rv$resources <- df
       rv$solution  <- NULL
       DT::replaceData(resources_proxy, rv$resources, resetPaging = FALSE)
     })
     
-    # Upload activities CSV
+    # --- Upload & replace activities table ---
     observeEvent(input$activity_file, {
       req(input$activity_file)
-      df <- utils::read.csv(input$activity_file$datapath, stringsAsFactors = FALSE)
+      df <- read.csv(input$activity_file$datapath, stringsAsFactors = FALSE)
       req(all(c("activity", "objective") %in% names(df)))
-      
       rv$activities <- df
-      rv$solution   <- NULL
+      rv$solution    <- NULL
       DT::replaceData(activities_proxy, rv$activities, resetPaging = FALSE)
     })
     
-    # Solve the model on Solve button click
+    # --- Solve the model when the button is clicked ---
     observeEvent(input$solve, {
-      # Build resource definitions
-      res_def <- ram::define_resources(
+      # build resource definition
+      res_def <- define_resources(
         resources    = rv$resources$resource,
         availability = as.numeric(rv$resources$availability),
         direction    = rv$resources$direction
       )
-      
-      # Build activity definitions
-      acts <- rv$activities
+      # build activity definition
+      acts    <- rv$activities
       techCols <- setdiff(names(acts), c("activity", "objective"))
-      techMat <- t(as.matrix(acts[, techCols]))
+      techMat  <- t(as.matrix(acts[, techCols, drop = FALSE]))
       colnames(techMat) <- acts$activity
       rownames(techMat) <- techCols
-      
-      act_def <- ram::define_activities(
+      act_def <- define_activities(
         activities                   = acts$activity,
         activity_requirements_matrix = techMat,
         objective                    = as.numeric(acts$objective)
       )
-      
-      # Solve
-      model <- ram::create_ram_model(res_def, act_def)
-      rv$solution <- ram::solve_ram(model, direction = input$direction)
+      # create & solve
+      model      <- create_ram_model(res_def, act_def)
+      rv$solution <- solve_ram(model, direction = input$direction)
     })
+    
   })
 }

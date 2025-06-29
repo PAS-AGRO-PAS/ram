@@ -2,10 +2,6 @@
 <url><loc>/404.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
-<url><loc>/articles/CropsMediterraneanFarm.html</loc></url>
-<url><loc>/articles/CropsMixedConstraints.html</loc></url>
-<url><loc>/articles/MediterraneanMixedFarm.html</loc></url>
-<url><loc>/articles/MediterraneanMixedFarmMeatMilkProduction.html</loc></url>
 <url><loc>/articles/MixedFarm.html</loc></url>
 <url><loc>/articles/WinterCrops.html</loc></url>
 <url><loc>/articles/WinterCropsAreaBounds.html</loc></url>
@@ -14,11 +10,14 @@
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
+<url><loc>/reference/app_server.html</loc></url>
+<url><loc>/reference/app_ui.html</loc></url>
 <url><loc>/reference/create_ram_model.html</loc></url>
 <url><loc>/reference/define_activities.html</loc></url>
 <url><loc>/reference/define_resources.html</loc></url>
 <url><loc>/reference/get_extdata.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/namespace-overrides.html</loc></url>
 <url><loc>/reference/plot_ram.html</loc></url>
 <url><loc>/reference/ram_optimize.html</loc></url>
 <url><loc>/reference/run_app.html</loc></url>

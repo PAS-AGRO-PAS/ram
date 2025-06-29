@@ -3,7 +3,7 @@
 #' Returns a DT table summarizing the solution of a solved RAM model.
 #'
 #' @param solution List returned by \code{solve_ram()}.
-#' @importFrom DT DTOutput renderDT
+#' @importFrom DT DTOutput renderDT datatable
 #' @return DT datatable with optimal activity levels and objective value.
 #' @export
 summary_ram <- function(solution) {

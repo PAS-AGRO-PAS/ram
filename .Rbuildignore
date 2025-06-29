@@ -1,4 +1,13 @@
-^.*\.Rproj$
-^\.Rproj\.user$
+^\\.Rproj$
+^\\.Rproj\\.user$
+^\\.vscode$
+^dev/
+^_pkgdown.yml$
+^README\\.Rmd$
+^NEWS\\.Rmd$
 ^doc$
+^LICENSE\\.md$
+^inst/app/www/
+^inst/app/logos/
+^\.Rproj\.user$
 ^Meta$

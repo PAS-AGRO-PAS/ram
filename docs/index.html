@@ -62,145 +62,151 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div class="section level2">
-<h2 id="ram-package">
+<div class="section level1">
+<div class="page-header"><h1 id="ram-package">
 <code>ram</code> Package<a class="anchor" aria-label="anchor" href="#ram-package"></a>
-</h2>
+</h1></div>
 <p>This repository provides:</p>
 <ol style="list-style-type: decimal">
-<li>An R package <strong><code>ram</code></strong> for Resource Allocation Modeling using linear programming.<br>
-</li>
-<li>A Shiny application that lets you interactively specify resource constraints, activities, and solve the LP model.</li>
+<li>An R package <strong><code>ram</code></strong> for Resource Allocation Modeling using linear programming, featuring sensitivity analysis via <code>lpSolve::compute.sens = TRUE</code>.</li>
+<li>A <a href="https://thinkr-open.github.io/golem/" class="external-link">golem</a>-based Shiny app with dynamic UI modes (“solve” &amp; “builder”), interactive tables, visualizations, and export capabilities.</li>
 </ol>
 <hr>
 </div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<p>You can install the development version directly from GitHub:</p>
+<div class="section level1">
+<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h1>
+<p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"https://github.com/PAS-AGRO-PAS/ram"</span><span class="op">)</span></span></code></pre></div>
-<p>Once installed, load the package:</p>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PAS-AGRO-PAS/ram"</span><span class="op">)</span></span></code></pre></div>
+<p>Then load the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ram</span><span class="op">)</span></span></code></pre></div>
+<hr>
 </div>
-<div class="section level2">
-<h2 id="quick-start-using-the-shiny-app">Quick Start: Using the Shiny App<a class="anchor" aria-label="anchor" href="#quick-start-using-the-shiny-app"></a>
-</h2>
-<p>The Shiny app provides a GUI to:</p>
-<ol style="list-style-type: decimal">
-<li><p>Download CSV templates for resources &amp; activities</p></li>
-<li><p>Upload your own data or edit in‐place</p></li>
-<li><p>Add / Remove rows dynamically</p></li>
-<li><p>Solve the LP (maximize or minimize)</p></li>
-<li><p>View optimal activity levels, resource usage, objective value, plots &amp; sensitivity</p></li>
-</ol>
-<p>Launch it with:</p>
+<div class="section level1">
+<h1 id="quick-start-launch-the-app">Quick Start: Launch the App<a class="anchor" aria-label="anchor" href="#quick-start-launch-the-app"></a>
+</h1>
+<p>Use the unified launcher with mode control:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># From within R or RStudio:</span></span>
-<span><span class="fu">ram</span><span class="fu">::</span><span class="fu"><a href="reference/run_app.html">run_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>A browser window will open at <a href="http://127.0.0.1:xxxx/" class="external-link uri">http://127.0.0.1:xxxx/</a>.</p>
+<code class="sourceCode R"><span><span class="fu">ram</span><span class="fu">::</span><span class="fu"><a href="reference/run_app.html">run_app</a></span><span class="op">(</span><span class="op">)</span>                 <span class="co"># default "solve" mode</span></span>
+<span><span class="fu">ram</span><span class="fu">::</span><span class="fu"><a href="reference/run_app.html">run_app</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"builder"</span><span class="op">)</span> <span class="co"># explicitly launch "builder" mode</span></span></code></pre></div>
+<p>The app uses <code>with_golem_options()</code> to pass the mode correctly and initializes external resources (logo, theming) automatically.</p>
+<hr>
 </div>
-<div class="section level2">
-<h2 id="package-vignette">Package Vignette<a class="anchor" aria-label="anchor" href="#package-vignette"></a>
-</h2>
-<p>For a worked example (the Mediterranean Mixed Farm), see the package vignette:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"WinterCropsAreaBounds"</span>, package <span class="op">=</span> <span class="st">"ram"</span><span class="op">)</span></span></code></pre></div>
-<p>This illustrates:</p>
+<div class="section level1">
+<h1 id="app-highlights">App Highlights<a class="anchor" aria-label="anchor" href="#app-highlights"></a>
+</h1>
 <ul>
-<li><p>Defining flexible resource constraints</p></li>
-<li><p>Building the activity matrix</p></li>
-<li><p>Solving the LP and interpreting results</p></li>
-<li><p>Performing sensitivity analysis on shadow prices</p></li>
+<li>
+<strong>Dynamic theming</strong> via <a href="https://rstudio.github.io/bslib/" class="external-link">bslib</a> with brand-based colors and light/dark toggle.</li>
+<li>
+<strong>Dynamic logo</strong> adapts to theme and displays in the app header.</li>
+<li>
+<strong>Solve Mode</strong>: upload or edit CSVs, define objectives, run the LP, view results &amp; sensitivity, and explore interactive plots.</li>
+<li>
+<strong>Builder Mode</strong>: define resources and activities on-the-fly, then export CSV or XLSX.</li>
 </ul>
+<hr>
+</div>
+<div class="section level1">
+<h1 id="programmatic-usage-example">Programmatic Usage Example<a class="anchor" aria-label="anchor" href="#programmatic-usage-example"></a>
+</h1>
+<div class="section level2">
+<h2 id="define-the-resources">Define the resources<a class="anchor" aria-label="anchor" href="#define-the-resources"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ram</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/define_resources.html">define_resources</a></span><span class="op">(</span></span>
+<span>  resources    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"land"</span>,<span class="st">"labor"</span>,<span class="st">"nitrogen"</span>,</span>
+<span>                   <span class="st">"oat_min"</span>,<span class="st">"oat_max"</span>,</span>
+<span>                   <span class="st">"barley_min"</span>,<span class="st">"barley_max"</span>,</span>
+<span>                   <span class="st">"lupin_min"</span>,<span class="st">"lupin_max"</span>,</span>
+<span>                   <span class="st">"fava_min"</span>,<span class="st">"fava_max"</span>,</span>
+<span>                   <span class="st">"pasture_min"</span>,<span class="st">"pasture_max"</span><span class="op">)</span>,</span>
+<span>  availability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">350</span>, <span class="fl">500</span>,   <span class="fl">2</span>,<span class="fl">8</span>,       <span class="fl">1</span>,<span class="fl">6</span>,       <span class="fl">2</span>,<span class="fl">5</span>,       <span class="fl">1</span>,<span class="fl">3</span>,       <span class="fl">2</span>,<span class="fl">4</span><span class="op">)</span>,</span>
+<span>  direction    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"&lt;="</span>,<span class="st">"&lt;="</span>,<span class="st">"&lt;="</span>, <span class="st">"&gt;="</span>,<span class="st">"&lt;="</span>, <span class="st">"&gt;="</span>,<span class="st">"&lt;="</span>, <span class="st">"&gt;="</span>,<span class="st">"&lt;="</span>, <span class="st">"&gt;="</span>,<span class="st">"&lt;="</span>, <span class="st">"&gt;="</span>,<span class="st">"&lt;="</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">res</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example-usage-in-r">Example Usage in R<a class="anchor" aria-label="anchor" href="#example-usage-in-r"></a>
+<h2 id="define-the-activities">Define the activities<a class="anchor" aria-label="anchor" href="#define-the-activities"></a>
 </h2>
-<p>Below is a minimal example of programmatic use:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ram</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 1) Define resources</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/define_resources.html">define_resources</a></span><span class="op">(</span></span>
-<span>  resources    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"land"</span>,<span class="st">"labor"</span>,<span class="st">"nitrogen"</span>,</span>
-<span>    <span class="st">"oat_min"</span>,<span class="st">"oat_max"</span>,</span>
-<span>    <span class="st">"barley_min"</span>,<span class="st">"barley_max"</span>,</span>
-<span>    <span class="st">"lupin_min"</span>,<span class="st">"lupin_max"</span>,</span>
-<span>    <span class="st">"fava_min"</span>,<span class="st">"fava_max"</span>,</span>
-<span>    <span class="st">"pasture_min"</span>,<span class="st">"pasture_max"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  availability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="fl">15</span>, <span class="fl">350</span>, <span class="fl">500</span>,   <span class="co"># totals</span></span>
-<span>     <span class="fl">2</span>,   <span class="fl">8</span>,        <span class="co"># oat</span></span>
-<span>     <span class="fl">1</span>,   <span class="fl">6</span>,        <span class="co"># barley</span></span>
-<span>     <span class="fl">2</span>,   <span class="fl">5</span>,        <span class="co"># lupin</span></span>
-<span>     <span class="fl">1</span>,   <span class="fl">3</span>,        <span class="co"># fava</span></span>
-<span>     <span class="fl">2</span>,   <span class="fl">4</span>         <span class="co"># pasture</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"&lt;="</span>, <span class="st">"&lt;="</span>, <span class="st">"&lt;="</span>,    <span class="co"># totals</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,          <span class="co"># oat</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,          <span class="co"># barley</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,          <span class="co"># lupin</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,          <span class="co"># fava</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>           <span class="co"># pasture</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 2) Define activities matrix</span></span>
-<span><span class="co"># after you've done `res &lt;- define_resources(…)`</span></span>
-<span></span>
-<span><span class="va">tech</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
-<span>  land         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">1</span>,  <span class="fl">1</span>,  <span class="fl">1</span>,  <span class="fl">1</span>,  <span class="fl">1</span><span class="op">)</span>,</span>
-<span>  labor        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">20</span>, <span class="fl">25</span>, <span class="fl">15</span>, <span class="fl">30</span>, <span class="fl">10</span><span class="op">)</span>,</span>
-<span>  nitrogen     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="fl">80</span>,<span class="fl">100</span>,  <span class="fl">0</span>, <span class="fl">30</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  oat_min      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  oat_max      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  barley_min   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  barley_max   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  lupin_min    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  lupin_max    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  fava_min     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  fava_max     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  pasture_min  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span><span class="op">)</span>,</span>
-<span>  pasture_max  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tech</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  land         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>  labor        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">25</span>,<span class="fl">15</span>,<span class="fl">30</span>,<span class="fl">10</span><span class="op">)</span>,</span>
+<span>  nitrogen     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>,<span class="fl">100</span>,<span class="fl">0</span>,<span class="fl">30</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>  oat_min      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,  oat_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>  barley_min   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,  barley_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>  lupin_min    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,  lupin_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>  fava_min     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,  fava_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>  pasture_min  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,  pasture_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tech</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oat"</span>,<span class="st">"barley"</span>,<span class="st">"lupin"</span>,<span class="st">"fava"</span>,<span class="st">"pasture"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># profit margins per hectare</span></span>
-<span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>oat<span class="op">=</span><span class="fl">400</span>, barley<span class="op">=</span><span class="fl">450</span>, lupin<span class="op">=</span><span class="fl">350</span>, fava<span class="op">=</span><span class="fl">500</span>, pasture<span class="op">=</span><span class="fl">360</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">acts</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/define_activities.html">define_activities</a></span><span class="op">(</span></span>
-<span>  activities                   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tech</span><span class="op">)</span>,</span>
+<span>  activities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tech</span><span class="op">)</span>,</span>
 <span>  activity_requirements_matrix <span class="op">=</span> <span class="va">tech</span>,</span>
-<span>  objective                    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>oat<span class="op">=</span><span class="fl">400</span>, barley<span class="op">=</span><span class="fl">450</span>, lupin<span class="op">=</span><span class="fl">350</span>, fava<span class="op">=</span><span class="fl">500</span>, pasture<span class="op">=</span><span class="fl">360</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 3) Build &amp; solve</span></span>
-<span><span class="va">model</span>    <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_ram_model.html">create_ram_model</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">acts</span><span class="op">)</span></span>
+<span>  objective <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>oat<span class="op">=</span><span class="fl">400</span>, barley<span class="op">=</span><span class="fl">450</span>, lupin<span class="op">=</span><span class="fl">350</span>, fava<span class="op">=</span><span class="fl">500</span>, pasture<span class="op">=</span><span class="fl">360</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="build-and-solve-the-model">Build and solve the model<a class="anchor" aria-label="anchor" href="#build-and-solve-the-model"></a>
+</h2>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_ram_model.html">create_ram_model</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">acts</span><span class="op">)</span></span>
 <span><span class="va">solution</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/solve_ram.html">solve_ram</a></span><span class="op">(</span><span class="va">model</span>, direction <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 4) Inspect results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">solution</span><span class="op">$</span><span class="va">optimal_activities</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">solution</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="inspect-results">Inspect results<a class="anchor" aria-label="anchor" href="#inspect-results"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">solution</span><span class="op">$</span><span class="va">optimal_activities</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">solution</span><span class="op">$</span><span class="va">objective_value</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="reference/sensitivity_ram.html">sensitivity_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/plot_ram.html">plot_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/summary_ram.html">summary_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+<h2 id="plot-the-solution">Plot the solution<a class="anchor" aria-label="anchor" href="#plot-the-solution"></a>
 </h2>
-<p>Please open issues or pull requests on GitHub.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_ram.html">plot_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span></code></pre></div>
+<hr>
 </div>
-<div class="section level2">
-<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
-</h2>
-<p>This project is licensed under the MIT License. See LICENSE for details.</p>
+</div>
+<div class="section level1">
+<h1 id="package-vignettes">Package Vignettes<a class="anchor" aria-label="anchor" href="#package-vignettes"></a>
+</h1>
+<p>For a practical demonstration, run:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"WinterCropsAreaBounds"</span>, package <span class="op">=</span> <span class="st">"ram"</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level1">
+<h1 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h1>
+<p>Contributions welcome — please <a href="https://github.com/PAS-AGRO-PAS/ram/issues" class="external-link">open issues</a> or submit <a href="https://github.com/PAS-AGRO-PAS/ram/pulls" class="external-link">pull requests</a>.</p>
+<hr>
+</div>
+<div class="section level1">
+<h1 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h1>
+<p>Licensed under MIT — see <a href="https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md" class="external-link">LICENSE</a>.</p>
+<hr>
+</div>
+<div class="section level1">
+<h1 id="pencil-summary-of-improvements">📝 Summary of Improvements<a class="anchor" aria-label="anchor" href="#pencil-summary-of-improvements"></a>
+</h1>
+<ul>
+<li>Unified <code><a href="reference/run_app.html">run_app()</a></code> respects both <code>"solve"</code> and <code>"builder"</code> modes.</li>
+<li>Enhanced branding &amp; light/dark theming via <a href="https://rstudio.github.io/bslib/" class="external-link">bslib</a>.</li>
+<li>Dynamic logo integration in the app header.</li>
+<li>Clear explanations of both interactive and programmatic workflows.</li>
+<li>Emphasis on interactive features: plots, sensitivity analysis, exports.</li>
+</ul>
 </div>
 
   </div>

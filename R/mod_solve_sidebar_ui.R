@@ -1,7 +1,8 @@
 #' Solve Sidebar UI Module
 #'
+##' @importFrom shiny NS tagList downloadButton fileInput radioButtons actionButton tags h4
 #' @noRd
-#' @importFrom shiny NS tagList downloadButton fileInput radioButtons actionButton tags h4
+
 mod_solve_sidebar_ui <- function(id) {
   ns <- NS(id)
   tagList(
