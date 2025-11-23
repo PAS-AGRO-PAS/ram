@@ -27,6 +27,8 @@ mod_builder_sidebar_ui <- function(id) {
     actionButton(ns("del_act"),  "🗑 Remove Activity",width="70%"),
     tags$hr(),
     downloadButton(ns("download_act_csv"),  "Export Activities CSV",  width="70%"),
-    downloadButton(ns("download_act_xlsx"), "Export Activities XLSX", width="70%")
+    downloadButton(ns("download_act_xlsx"), "Export Activities XLSX", width="70%"),
+    tags$hr(),
+    actionButton(ns("handoff_solver"), "Open In Solver", icon = icon("share-from-square"), width = "70%")
   )
 }

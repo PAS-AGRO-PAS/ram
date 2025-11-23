@@ -49,7 +49,14 @@
   <a href="news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/PAS-AGRO-PAS/ram/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -79,7 +86,7 @@
 <p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PAS-AGRO-PAS/ram"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/remotes/man/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"PAS-AGRO-PAS/ram"</span><span class="op">)</span></span></code></pre></div>
 <p>Then load the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ram</span><span class="op">)</span></span></code></pre></div>
@@ -102,11 +109,13 @@
 <li>
 <strong>Dynamic theming</strong> via <a href="https://rstudio.github.io/bslib/" class="external-link">bslib</a> with brand-based colors and light/dark toggle.</li>
 <li>
-<strong>Dynamic logo</strong> adapts to theme and displays in the app header.</li>
+<strong>Dynamic logo</strong> rendered via <code>uiOutput()</code> so it can react to future theme changes.</li>
 <li>
-<strong>Solve Mode</strong>: upload or edit CSVs, define objectives, run the LP, view results &amp; sensitivity, and explore interactive plots.</li>
+<strong>Solve Mode</strong>: upload or edit CSVs (inline edits now update the solver inputs), define objectives, run the LP, view results &amp; sensitivity, and explore interactive plots.</li>
 <li>
-<strong>Builder Mode</strong>: define resources and activities on-the-fly, then export CSV or XLSX.</li>
+<strong>Data validation &amp; feedback</strong>: CSV uploads are checked for required columns, numeric values, and constraint directions, while solver failures show actionable notifications plus downloadable lpSolve reports.</li>
+<li>
+<strong>Builder Mode</strong>: define resources and activities on-the-fly; resource/activity tables stay column-synced automatically so CSV/XLSX exports remain consistent, and a one-click “Open in Solver” handoff reuses the same Shiny session.</li>
 </ul>
 <hr>
 </div>
@@ -195,24 +204,22 @@
 <h1 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h1>
 <p>Licensed under MIT — see <a href="https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md" class="external-link">LICENSE</a>.</p>
-<hr>
-</div>
-<div class="section level1">
-<h1 id="pencil-summary-of-improvements">📝 Summary of Improvements<a class="anchor" aria-label="anchor" href="#pencil-summary-of-improvements"></a>
-</h1>
-<ul>
-<li>Unified <code><a href="reference/run_app.html">run_app()</a></code> respects both <code>"solve"</code> and <code>"builder"</code> modes.</li>
-<li>Enhanced branding &amp; light/dark theming via <a href="https://rstudio.github.io/bslib/" class="external-link">bslib</a>.</li>
-<li>Dynamic logo integration in the app header.</li>
-<li>Clear explanations of both interactive and programmatic workflows.</li>
-<li>Emphasis on interactive features: plots, sensitivity analysis, exports.</li>
-</ul>
 </div>
 
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+    <div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/PAS-AGRO-PAS/ram/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/PAS-AGRO-PAS/ram/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/PAS-AGRO-PAS/ram" class="external-link">Source on GitHub</a></li>
+<li><a href="https://github.com/PAS-AGRO-PAS/ram/issues" class="external-link">Report Issues</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>

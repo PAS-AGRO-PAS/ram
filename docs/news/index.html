@@ -31,7 +31,13 @@
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
-      </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
+      </ul><ul class="nav navbar-nav navbar-right"><li>
+  <a href="https://github.com/PAS-AGRO-PAS/ram/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
+      </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
@@ -41,17 +47,31 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1 data-toc-skip>Changelog <small></small></h1>
-
+      <small>Source: <a href="https://github.com/PAS-AGRO-PAS/ram/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.0.0.9002" id="ram-0009002-2025-11-07">
+<a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9002" class="external-link">ram 0.0.0.9002</a> <small>2025-11-07</small>
+<a class="anchor" aria-label="anchor" href="#ram-0009002-2025-11-07"></a></h2>
+<div class="section level3">
+<h3 id="id_-new-features--enhancements-0-0-0-9002">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#id_-new-features--enhancements-0-0-0-9002"></a></h3>
+<ul><li>
+<strong>Builder ➜ Solver hand-off</strong>: the builder sidebar now exposes an “Open In Solver” button that serializes the current tables to JSON, opens a solve-mode session, and auto-loads the structures via URL query parsing—no manual CSV round-trips.</li>
+<li>
+<strong>Solver diagnostics &amp; exports</strong>: optimization results show live status badges, human-readable hints, and a download button for the raw <code>lpSolve</code> report so users can audit every run.</li>
+<li>
+<strong>State-aware uploads/edits</strong>: uploading templates or editing DT cells now clears stale solutions and updates a centralized solver status object, preventing accidental reuse of outdated answers.</li>
+<li>
+<strong>Documentation &amp; tests</strong>: README/NEWS highlight the new workflow, and <code>testthat</code> coverage guards the CSV validator helpers plus builder column-alignment utilities.</li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.0.0.9001" id="ram-0009001-2025-06-30">
 <a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9001" class="external-link">ram 0.0.0.9001</a> <small>2025-06-30</small>
 <a class="anchor" aria-label="anchor" href="#ram-0009001-2025-06-30"></a></h2>
 <div class="section level3">
-<h3 id="rocket-minor-release-0-0-0-9001">🚀 Minor Release<a class="anchor" aria-label="anchor" href="#rocket-minor-release-0-0-0-9001"></a></h3>
-<div class="section level4">
-<h4 id="wrench-new-features--enhancements-0-0-0-9001">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#wrench-new-features--enhancements-0-0-0-9001"></a></h4>
+<h3 id="id_-new-features--enhancements-0-0-0-9001">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#id_-new-features--enhancements-0-0-0-9001"></a></h3>
 <ul><li>
 <strong>Unified app launcher</strong>: <code>run_app(mode = "solve")</code> or <code>run_app(mode = "builder")</code>, which sets <code>app_mode</code> via <a href="https://thinkr-open.github.io/golem/" class="external-link">golem</a> and ensures external resources are initialized correctly.</li>
 <li>
@@ -67,21 +87,39 @@
 </ul></li>
 <li>
 <strong>Logo Integration</strong>:
-<ul><li>Header now displays brand logo from <code>app/www/logo-[dark|light].svg</code>, auto-switching based on theme mode.</li>
+<ul><li>Header now renders the logo via <code>uiOutput("app_logo")</code>, ensuring the dynamic server widget actually appears and can react to future theme toggles.</li>
 </ul></li>
 <li>
 <strong>Improved Sidebar Layout</strong>:
 <ul><li>Sidebar now uses bslib <code>sidebarLayout()</code>, applies consistent design across themes, and toggles collapse automatically.</li>
 </ul></li>
 <li>
+<strong>Inline Editing &amp; Persistence</strong>:
+<ul><li>Edits made directly in the Resources/Activities DT tables now write back to the underlying <code>reactiveValues</code> via <code><a href="https://rdrr.io/pkg/DT/man/editData.html" class="external-link">DT::editData()</a></code>, guaranteeing the solver runs with the data users can see.</li>
+<li>Any table edit or CSV upload clears stale solver results so users never see outdated solutions.</li>
+</ul></li>
+<li>
+<strong>Validation &amp; Error Surfacing</strong>:
+<ul><li>Uploaded CSVs are validated for required columns, numeric fields, and valid inequality directions; friendly notifications guide users when data needs fixing.</li>
+<li>Solve attempts are wrapped in <code>tryCatch</code>, enforce at-least-one resource/activity, and surface lpSolve status codes instead of silently returning partial outputs.</li>
+</ul></li>
+<li>
+<strong>Builder Mode Safeguards</strong>:
+<ul><li>Activities can only be added after at least one resource exists, coefficient inputs default to <code>0</code>, and builder tables stay column-synced even as resources are added or removed.</li>
+<li>CSV/XLSX exports now always include the exact resource columns currently defined, preventing mismatched templates.</li>
+</ul></li>
+<li>
 <strong>Documentation Updates</strong>:
 <ul><li>
-<code>README.Rmd</code> refreshed to document the modular architecture, unified launcher, theming options, and branding support.</li>
+<code>README.Rmd</code> expanded with inline-edit persistence, validation/notification workflow, solver feedback, builder-to-solver handoff, and column-syncing notes alongside the modular architecture overview.</li>
+</ul></li>
+<li>
+<strong>Testing</strong>:
+<ul><li>Added focused <code>testthat</code> coverage for the new validator helpers and builder column alignment utilities.</li>
 </ul></li>
 </ul><hr></div>
-</div>
 <div class="section level3">
-<h3 id="jigsaw-previous--0-0-0-9001">🧩 Previous (0.0.0.9000 – 2025-06-26)<a class="anchor" aria-label="anchor" href="#jigsaw-previous--0-0-0-9001"></a></h3>
+<h3 id="id_-previous--0-0-0-9001">🧩 Previous (0.0.0.9000 – 2025-06-26)<a class="anchor" aria-label="anchor" href="#id_-previous--0-0-0-9001"></a></h3>
 <ul><li>Core functions:
 <ul><li>
 <code><a href="../reference/define_resources.html">define_resources()</a></code>, <code><a href="../reference/define_activities.html">define_activities()</a></code>, <code><a href="../reference/create_ram_model.html">create_ram_model()</a></code>, <code><a href="../reference/solve_ram.html">solve_ram()</a></code>, <code><a href="../reference/sensitivity_ram.html">sensitivity_ram()</a></code>, <code><a href="../reference/plot_ram.html">plot_ram()</a></code>

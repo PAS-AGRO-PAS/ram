@@ -9,6 +9,10 @@ vignette: >
 
 ```{r setup, include=FALSE}
 library(ram)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(stringr)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -17,118 +21,104 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-In Mediterranean mixed‐farm systems, land and labor are shared between arable crops and livestock enterprises.  The objective of this analysis is to determine the profit‐maximizing allocation of 15 ha of land, 350 h of labor and 400 kg of available nitrogen among four winter crops and a temporary pasture for sheep.  Each crop carries standard agronomic area bounds (e.g. oat between 2 ha and 8 ha), and pasture must lie between 2 ha and 4 ha.  Margins (€/ha) and resource requirements (land, labor, nitrogen) are summarized in Table 1.
+In Mediterranean mixed‐farm systems, land and labor are shared between arable crops and livestock enterprises.  The objective of this analysis is to determine the profit‐maximizing allocation of 15 ha of land, 350 h of labor and 400 kg of available nitrogen among four winter crops and a temporary pasture for sheep.  Each crop carries standard agronomic area bounds (e.g. oat between 2 ha and 8 ha), and pasture must lie between 2 ha and 4 ha.  All assumptions are captured in a single specification table so the narrative, code, and Shiny app share one source of truth.
 
-**Table 1.** Resource requirements, margins and area bounds for each activity.
+```{r activity-specs}
+activity_specs <- tibble::tribble(
+  ~activity, ~land, ~labor, ~nitrogen, ~margin, ~min_area, ~max_area,
+  "oat",      1,      20,      80,       400,     2,         8,
+  "barley",   1,      25,     100,       450,     1,         6,
+  "lupin",    1,      15,       0,       350,     2,         5,
+  "fava",     1,      30,      30,       500,     1,         3,
+  "pasture",  1,      10,       0,       360,     2,         4
+)
 
-| Activity      | Land (ha) | Labor (h) | Nitrogen (kg) | Margin (€/ha) | Area bounds (ha) |
-|:-------------:|:---------:|:---------:|:-------------:|:-------------:|:----------------:|
-| **Oat**       | 1         | 20        | 80            | 400           | 2 – 8            |
-| **Barley**    | 1         | 25        | 100           | 450           | 1 – 6            |
-| **Lupin**     | 1         | 15        | 0             | 350           | 2 – 5            |
-| **Fava**      | 1         | 30        | 30            | 500           | 1 – 3            |
-| **Pasture**   | 1         | 10        | 0             | 360           | 2 – 4            |
+activity_specs %>%
+  mutate(
+    activity = stringr::str_to_title(activity),
+    area_bounds = paste(min_area, "\u2013", max_area)
+  ) %>%
+  select(Activity = activity, `Land (ha)` = land, `Labor (h)` = labor,
+         `Nitrogen (kg)` = nitrogen, `Margin (€/ha)` = margin,
+         `Area bounds (ha)` = area_bounds) %>%
+  knitr::kable(caption = "Table 1. Resource requirements, margins, and area bounds for each activity.")
+```
 
-
-We formulate a linear program to maximize total gross margin subject to resource and area‐bound constraints.  The following sections describe the model construction, solution and sensitivity analysis using the `ram` package.
+We formulate a linear program to maximize total gross margin subject to resource and area constraints.  The following sections describe the model construction, solution, and sensitivity analysis using the `ram` package (the same data ships as the default example inside `ram::run_app(mode = "solve")` or via the builder → solver hand-off).
 
 # Methods
 
 ## Define Resource Constraints
 
-We first declare the available resources and the minimum/maximum area constraints for each crop and pasture.  The function `define_resources()` accepts three parallel vectors: resource names, availabilities, and constraint directions (`"≤"` or `"≥"`).
+We declare the available totals (land, labor, nitrogen) and then derive the per-activity bounds directly from `activity_specs`, ensuring every downstream object stays consistent.
 
 ```{r define-resources}
-# Step 1: Define Resource Constraints (flexible min/max for each crop)
-resources <- define_resources(
-  resources = c(
-    # total availables
-    "land", "labor", "nitrogen",
-    # per‐crop bounds
-    "oat_min",   "oat_max",
-    "barley_min","barley_max",
-    "lupin_min", "lupin_max",
-    "fava_min",  "fava_max",
-    "pasture_min","pasture_max"
-  ),
-  availability = c(
-    # totals
-     15,    350,    400,
-    # bounds
-      2,      8,   # oat
-      1,      6,   # barley
-      2,      5,   # lupin
-      1,      3,   # fava
-      2,      4    # pasture
-  ),
-  direction = c(
-    # totals all <=
-    "<=",   "<=",   "<=",
-    # minimums >=, maximums <=
-    ">=", "<=",  # oat
-    ">=", "<=",  # barley
-    ">=", "<=",  # lupin
-    ">=", "<=",  # fava
-    ">=", "<="   # pasture
-  )
+resource_totals <- tibble::tribble(
+  ~resource, ~availability, ~direction,
+  "land",        15,          "<=",
+  "labor",      350,          "<=",
+  "nitrogen",   400,          "<="
 )
 
-print(resources)
+resource_bounds <- activity_specs %>%
+  select(activity, min_area, max_area) %>%
+  pivot_longer(c(min_area, max_area), names_to = "bound_type", values_to = "availability") %>%
+  mutate(
+    resource  = paste0(activity, if_else(bound_type == "min_area", "_min", "_max")),
+    direction = if_else(bound_type == "min_area", ">=", "<=")
+  ) %>%
+  select(resource, availability, direction)
+
+resources_tbl <- bind_rows(resource_totals, resource_bounds)
+
+resources <- define_resources(
+  resources   = resources_tbl$resource,
+  availability = resources_tbl$availability,
+  direction    = resources_tbl$direction
+)
+
+resources
 ```
 
 ## Specify Activities
 
-Next, we assemble the technical matrix, whose rows correspond to the resources declared above, and whose columns correspond to the five activities. Each entry is the per‐unit requirement (or, for area‐bounds rows, an indicator). The vector objective lists the margin for each activity.
+The technical matrix mirrors the resource order: totals first, then each activity’s minimum and maximum indicator rows.  Using the specification tibble keeps the code readable.
 
 ```{r sepcActivities}
-# Step 2: Define Activities
-activity_requirements_matrix <- matrix(
-  c(
-    # land (ha)
-     1,    1,    1,    1,     1, 
-    # labor (h)
-    20,   25,   15,   30,    10, 
-    # nitrogen (kg)
-    80,  100,    0,   30,     0, 
-    # bounds indicator rows (1 for that crop, 0 else)
-    # oat_min
-     1,   0,    0,    0,     0,
-    # oat_max
-     1,   0,    0,    0,     0,
-    # barley_min
-     0,   1,    0,    0,     0,
-    # barley_max
-     0,   1,    0,    0,     0,
-    # lupin_min
-     0,   0,    1,    0,     0,
-    # lupin_max
-     0,   0,    1,    0,     0,
-    # fava_min
-     0,   0,    0,    1,     0,
-    # fava_max
-     0,   0,    0,    1,     0,
-    # pasture_min
-     0,   0,    0,    0,     1,
-    # pasture_max
-     0,   0,    0,    0,     1
-  ),
-  nrow = nrow(resources),
-  byrow = TRUE,
-  dimnames = list(
-    resources$resource,
-    c("oat","barley","lupin","fava","pasture")
-  )
+activity_names <- activity_specs$activity
+
+indicator_list <- lapply(activity_names, function(name) {
+  vec <- as.numeric(activity_names == name)
+  mat <- matrix(vec, nrow = 1, dimnames = list(NULL, activity_names))
+  min_row <- mat
+  rownames(min_row) <- paste0(name, "_min")
+  max_row <- mat
+  rownames(max_row) <- paste0(name, "_max")
+  rbind(min_row, max_row)
+})
+
+bound_rows <- do.call(rbind, indicator_list)
+
+tech_totals <- rbind(
+  land     = activity_specs$land,
+  labor    = activity_specs$labor,
+  nitrogen = activity_specs$nitrogen
 )
 
-objective <- c(oat=400, barley=450, lupin=350, fava=500, pasture=360)
+activity_requirements_matrix <- rbind(tech_totals, bound_rows)
+row_order <- resources_tbl$resource
+activity_requirements_matrix <- activity_requirements_matrix[row_order, , drop = FALSE]
+
+objective <- activity_specs$margin
+names(objective) <- activity_specs$activity
 
 activities <- define_activities(
-  activities = colnames(activity_requirements_matrix),
+  activities = activity_names,
   activity_requirements_matrix = activity_requirements_matrix,
   objective = objective
 )
 
-print(activities)
+activities
 ```
 
 ## Build and Solve the Linear Program
@@ -145,41 +135,11 @@ solution <- solve_ram(model, direction = "max")
 
 ## Optimal Allocation
 
-The optimal area (ha) for each activity is extracted from `solution$optimal_activities` and presented in Table 2.
-
-Table 2. Optimal area allocation (ha) under maximized gross margin.
-
+`summary_ram()` consolidates the optimal activities and the objective value; `plot_ram()` provides the accompanying visual.
 
 ```{r table}
-dat <- data.frame(
-  Activity = names(solution$optimal_activities),
-  Area_ha  = round(as.numeric(solution$optimal_activities), 1)
-)
-
-DT::datatable(
-  dat,
-  caption = htmltools::tags$caption(
-    style = "caption-side: top; text-align: left;",
-    "Table 2. Optimal area allocation (ha) under maximized gross margin."
-  ),
-  rownames = FALSE,
-  options = list(
-    autoWidth = TRUE,
-    columnDefs = list(
-      list(width = '3cm', targets = 0),  # first column (activity)
-      list(width = '2cm', targets = 1)   # second column (level)
-    )
-  )
-) |>
-  DT::formatRound("Area_ha", 2)
+summary_ram(solution)
 ```
-
-The maximum total gross margin achieved is:
-
-```{r}
-cat("Maximum gross margin (EUR):", solution$objective_value, "\n")
-```
-
 
 ```{r, fig.width=10, fig.height=5}
 plot_ram(solution)
@@ -194,11 +154,8 @@ To explore the economic value of relaxing each constraint, we compute the shadow
 ### Step 5: Sensitivity Analysis
 
 ```{r}
-sensitivity_ram(solution)
-# Compute sensitivity
 sens <- sensitivity_ram(solution)
 
-# Render as a clean datatable
 DT::datatable(
   sens,
   caption = htmltools::tags$caption(
@@ -224,6 +181,6 @@ DT::datatable(
 
 # Conclusion
 
-The sensitivity analysis in Table 3 highlights which constraints are active at the optimum and how marginal changes in resource availability would affect the maximum gross margin. A shadow price of zero for land indicates that, under the current parameterisation, land is not the binding constraint—there is slack capacity. The absence of numeric shadow prices (NA) for labor, nitrogen, and the per‐crop bounds signifies that these constraints either are non‐binding or lie outside the solver’s range reporting.
+The sensitivity analysis highlights which constraints are binding at the optimum and therefore command a non-zero shadow price. In this scenario, the minimum area bounds for oat, barley, and lupin are binding (shadow price > 0), implying that allowing an extra hectare of any of those crops would increase the gross margin by the indicated amount. Land, labor, nitrogen, and the remaining bounds exhibit zero prices, signalling slack capacity under the current assumptions.
 
-Notably, all minimum area bounds for the four winter crops and the temporary pasture are respected exactly (the solution values coincide with their minimum or maximum limits), confirming that these structural requirements shape the optimal plan. Practitioners may use these insights to decide whether relaxing or tightening particular bounds (e.g., allowing more pasture area or increasing labor availability) could unlock additional profitability. Moreover, this framework can readily incorporate further enterprises (e.g., olive groves, poultry) or environmental targets (e.g., nitrate leaching limits) by augmenting the resources and activities matrices accordingly.
+Because every input stems from `activity_specs`, exploring what-if scenarios is as simple as editing the tibble (or loading alternative CSVs inside `ram::run_app()`). Practitioners can therefore iterate between scripted analyses like this vignette and the interactive builder → solver workflow without re-entering data, ensuring evidence-based decisions remain consistent across tools.

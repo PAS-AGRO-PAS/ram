@@ -221,10 +221,9 @@ print(scen_df)
 ```
 
 
-```{r}
+```{r fig.alt="Line chart showing how maximum gross margin varies with nitrogen levels under different labor availabilities."}
 library(ggplot2)
-ggplot(scen_df, aes(x=factor(nitrogen), y=objective, color=factor(labor), group=factor(labor))) +
+ggplot(scen_df, aes(x = factor(nitrogen), y = objective, color = factor(labor), group = factor(labor))) +
   geom_line() + geom_point() +
-  labs(x="Nitrogen (kg)", y="Max Gross Margin (€)", color="Labor (h)")
+  labs(x = "Nitrogen (kg)", y = "Max Gross Margin (€)", color = "Labor (h)")
 ```
-

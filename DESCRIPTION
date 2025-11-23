@@ -7,6 +7,8 @@ Authors@R: c(
     person("Ursula", "Gonzales-Barron", email = "ubarron@ipb.pt", role = "aut"))
 Description: Tools to define and solve resource allocation models (RAM) for agro-pastoral systems.
 License: MIT + file LICENSE
+URL: https://pas-agro-pas.github.io/ram, https://github.com/PAS-AGRO-PAS/ram
+BugReports: https://github.com/PAS-AGRO-PAS/ram/issues
 Imports:
     dplyr,
     plotly,
@@ -16,7 +18,8 @@ Imports:
     lpSolve,
     config,
     bslib,
-    openxlsx
+    openxlsx,
+    jsonlite
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests:

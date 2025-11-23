@@ -64,12 +64,34 @@ app_server <- function(input, output, session) {
                                     stringsAsFactors = FALSE),
     builder_activities = data.frame(Name = character(), 
                                     Objective = numeric(), 
-                                    stringsAsFactors = FALSE)
+                                    stringsAsFactors = FALSE),
+    solver_status = list(state = "idle",
+                         code = NA_integer_,
+                         message = "Awaiting first solve")
     )
   
   # --- DT proxies for solve-mode ---
   resources_proxy  <- DT::dataTableProxy("resources_table")
   activities_proxy <- DT::dataTableProxy("activities_table")
+  observeEvent(session$clientData$url_search, {
+    url <- session$clientData$url_search %||% ""
+    payload <- parse_builder_payload(url)
+    if (!is.null(payload)) {
+      rv$resources <- payload$resources
+      rv$activities <- payload$activities
+      rv$solution <- NULL
+      rv$solver_status <- list(
+        state = "dirty",
+        code = NA_integer_,
+        message = "Loaded tables from builder handoff. Run the solver to compute results."
+      )
+      DT::replaceData(resources_proxy, rv$resources, resetPaging = FALSE)
+      DT::replaceData(activities_proxy, rv$activities, resetPaging = FALSE)
+      shiny::showNotification("Builder tables loaded. Switch to the Optimization tab and click Solve.", type = "message")
+    } else if (grepl("builder_payload=", url, fixed = TRUE)) {
+      shiny::showNotification("Builder payload was present but could not be parsed.", type = "error")
+    }
+  }, once = TRUE)
   
   # --- Solve sidebar module (uploads, downloads, solve) ---
   mod_solve_sidebar_server(
@@ -86,6 +108,26 @@ app_server <- function(input, output, session) {
   output$activities_table <- DT::renderDT({
     DT::datatable(rv$activities, rownames = FALSE, editable = TRUE)
   })
+  observeEvent(input$resources_table_cell_edit, {
+    info <- input$resources_table_cell_edit
+    rv$resources <- DT::editData(rv$resources, info, proxy = resources_proxy, resetPaging = FALSE)
+    rv$solution <- NULL
+    rv$solver_status <- list(
+      state = "dirty",
+      code = NA_integer_,
+      message = "Resource table edited. Re-run the solver."
+    )
+  })
+  observeEvent(input$activities_table_cell_edit, {
+    info <- input$activities_table_cell_edit
+    rv$activities <- DT::editData(rv$activities, info, proxy = activities_proxy, resetPaging = FALSE)
+    rv$solution <- NULL
+    rv$solver_status <- list(
+      state = "dirty",
+      code = NA_integer_,
+      message = "Activity table edited. Re-run the solver."
+    )
+  })
   
   # --- Solve-mode results ---
   output$solution_tbl <- DT::renderDT({
@@ -96,25 +138,41 @@ app_server <- function(input, output, session) {
       Level    = as.numeric(sol_vec),
       stringsAsFactors = FALSE
     )
-    reqs <- rv$activities[match(df$Activity, rv$activities$activity),
-                          c("land","labor","nitrogen")]
-    df$Land  <- df$Level * reqs$land
-    df$Labor <- df$Level * reqs$labor
-    df$N     <- df$Level * reqs$nitrogen
-    total <- data.frame(
-      Activity = "Total",
-      Level    = sum(df$Level),
-      Land     = sum(df$Land),
-      Labor    = sum(df$Labor),
-      N        = sum(df$N),
-      stringsAsFactors = FALSE
-    )
-    DT::datatable(
-      rbind(df, total),
-      rownames = FALSE,
-      options = list(dom = "t")
-    ) %>%
-      DT::formatRound(c("Level","Land","Labor","N"), 1)
+    tech_cols <- setdiff(names(rv$activities), c("activity", "objective"))
+    if (length(tech_cols)) {
+      reqs <- rv$activities[match(df$Activity, rv$activities$activity), tech_cols, drop = FALSE]
+      reqs[] <- lapply(reqs, as.numeric)
+      usage <- sweep(reqs, 1, df$Level, `*`)
+      df <- cbind(df, usage)
+      total_usage <- colSums(usage)
+      total <- data.frame(
+        Activity = "Total",
+        Level = sum(df$Level),
+        t(total_usage),
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      )
+      df <- rbind(df, total, stringsAsFactors = FALSE)
+      numeric_cols <- setdiff(names(df), "Activity")
+      DT::datatable(
+        df,
+        rownames = FALSE,
+        options = list(dom = "t")
+      ) %>%
+        DT::formatRound(numeric_cols, 1)
+    } else {
+      total <- data.frame(
+        Activity = "Total",
+        Level = sum(df$Level),
+        stringsAsFactors = FALSE
+      )
+      DT::datatable(
+        rbind(df, total),
+        rownames = FALSE,
+        options = list(dom = "t")
+      ) %>%
+        DT::formatRound("Level", 1)
+    }
   })
   output$objective_val   <- renderPrint({ req(rv$solution); rv$solution$objective_value })
   output$activity_plot   <- plotly::renderPlotly({ req(rv$solution); plot_ram(rv$solution) })
@@ -127,6 +185,52 @@ app_server <- function(input, output, session) {
       DT::datatable(out)
     }
   })
+  output$solver_status <- renderUI({
+    status <- rv$solver_status
+    state  <- status$state %||% "idle"
+    label  <- switch(
+      state,
+      success = "Optimal solution",
+      error   = "Solver issue",
+      running = "Solving…",
+      dirty   = "Needs solve",
+      "Idle"
+    )
+    badge_class <- switch(
+      state,
+      success = "bg-success",
+      error   = "bg-danger",
+      running = "bg-warning text-dark",
+      dirty   = "bg-secondary",
+      "bg-secondary"
+    )
+    tags$div(
+      class = "mb-2",
+      tags$span(class = paste("badge", badge_class), label),
+      tags$span(class = "ms-2", status$message %||% "Run the solver to see output.")
+    )
+  })
+  output$solver_diagnostics <- renderPrint({
+    status <- rv$solver_status
+    state  <- status$state %||% "idle"
+    message <- status$message %||% "Awaiting first solve."
+    cat(message, "\n")
+    if (!is.null(status$code) && !is.na(status$code)) {
+      cat("lpSolve status code:", status$code, "\n")
+    }
+    if (state == "error") {
+      cat("Hints: Verify resource bounds, ensure at least one feasible activity combination, and review constraint directions.\n")
+    }
+  })
+  output$download_lp_report <- downloadHandler(
+    filename = function() {
+      paste0("ram-solver-report-", Sys.Date(), ".rds")
+    },
+    content = function(file) {
+      req(rv$solution)
+      saveRDS(rv$solution$lp_result, file = file)
+    }
+  )
   
   # --- DT proxies for builder-mode ---
   builder_res_proxy <- DT::dataTableProxy("res_tbl")
@@ -152,8 +256,18 @@ app_server <- function(input, output, session) {
   observeEvent(input[["builder-del_res"]], {
     sel <- input$res_tbl_rows_selected
     if (length(sel)) {
+      removed <- rv$builder_resources$Name[sel]
       rv$builder_resources <- rv$builder_resources[-sel, , drop = FALSE]
       DT::replaceData(builder_res_proxy, rv$builder_resources, resetPaging = FALSE)
+      if (length(removed)) {
+        keep_cols <- setdiff(names(rv$builder_activities), removed)
+        rv$builder_activities <- rv$builder_activities[, keep_cols, drop = FALSE]
+        rv$builder_activities <- ensure_builder_activity_columns(
+          rv$builder_activities,
+          rv$builder_resources$Name
+        )
+        DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
+      }
     }
   })
   observeEvent(input[["builder-del_act"]], {
@@ -163,4 +277,48 @@ app_server <- function(input, output, session) {
       DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
     }
   })
+}
+
+`%||%` <- function(x, y) {
+  if (is.null(x)) {
+    y
+  } else {
+    x
+  }
+}
+
+parse_builder_payload <- function(url_search) {
+  if (is.null(url_search) || !nzchar(url_search)) {
+    return(NULL)
+  }
+  query <- shiny::parseQueryString(sub("^\\?", "", url_search))
+  payload_raw <- query$builder_payload
+  if (is.null(payload_raw) || !nzchar(payload_raw)) {
+    return(NULL)
+  }
+  # Payload arrives URL-encoded; we also support base64-wrapped JSON to
+  # avoid '=' characters breaking query parsing.
+  decoded <- utils::URLdecode(payload_raw)
+  json_txt <- tryCatch(
+    {
+      raw_txt <- jsonlite::base64_dec(decoded)
+      rawToChar(raw_txt)
+    },
+    error = function(e) decoded
+  )
+  payload <- tryCatch(
+    jsonlite::fromJSON(json_txt, simplifyDataFrame = TRUE),
+    error = function(e) NULL
+  )
+  if (is.null(payload$resources) || is.null(payload$activities)) {
+    return(NULL)
+  }
+  resources <- as.data.frame(payload$resources, stringsAsFactors = FALSE)
+  activities <- as.data.frame(payload$activities, stringsAsFactors = FALSE)
+  resources <- tryCatch(validate_resource_upload(resources), error = function(e) NULL)
+  activities <- tryCatch(validate_activity_upload(activities), error = function(e) NULL)
+  if (is.null(resources) || is.null(activities)) {
+    return(NULL)
+  }
+  list(resources = resources, activities = activities)
 }

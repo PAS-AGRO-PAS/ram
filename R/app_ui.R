@@ -8,8 +8,15 @@
 #' @importFrom plotly plotlyOutput
 #' @importFrom golem get_golem_options
 app_ui <- function(request) {
-  mode <- golem::get_golem_options("app_mode")
-  if (is.null(mode)) mode <- "solve"
+  mode_opt <- golem::get_golem_options("app_mode")
+  query_mode <- NULL
+  if (!is.null(request)) {
+    query <- shiny::parseQueryString(request$QUERY_STRING)
+    query_mode <- query$mode
+  }
+  mode <- query_mode
+  if (is.null(mode)) mode <- mode_opt
+  if (is.null(mode) || !(mode %in% c("solve", "builder"))) mode <- "solve"
   
   theme <- bs_theme(
     version   = 5,
@@ -25,10 +32,7 @@ app_ui <- function(request) {
   fluidPage(
     theme = theme,
     titlePanel(
-      title = div(
-        img(src = "www/logo.png", height = "60px", style = "margin-right: 10px; vertical-align: middle;"),
-        "Resource Allocation Models"
-      ),
+      title = uiOutput("app_logo"),
       windowTitle = "ram app"
     ),
 
@@ -51,6 +55,19 @@ app_ui <- function(request) {
             if (mode == "solve") solve_panels() else builder_panels()
           )
         )
+      )
+    ),
+    tags$head(
+      tags$script(
+        HTML("
+          Shiny.addCustomMessageHandler('ram-open-solver', function(message) {
+            if (!message || !message.payload) return;
+            var payload = encodeURIComponent(message.payload);
+            var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+            var target = baseUrl + '?mode=solve&builder_payload=' + payload;
+            window.open(target, '_blank');
+          });
+        ")
       )
     )
   )
@@ -106,9 +123,16 @@ solve_panels <- function() {
     ),
     tabPanel("Optimization",
              h2("Optimal Solution"),
+             uiOutput("solver_status"),
+             div(
+               class = "d-flex gap-2 flex-wrap mb-3",
+               downloadButton("download_lp_report", "Download Solver Report (.rds)")
+             ),
              DT::DTOutput("solution_tbl"),
              verbatimTextOutput("objective_val"),
-             plotly::plotlyOutput("activity_plot")
+             plotly::plotlyOutput("activity_plot"),
+             h4("Solver Diagnostics"),
+             verbatimTextOutput("solver_diagnostics")
     ),
     tabPanel("Sensitivity",
              h2("Sensitivity Analysis"),

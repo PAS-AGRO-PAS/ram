@@ -1,7 +1,16 @@
 # _pkgdown.yml
+url: https://pas-agro-pas.github.io/ram
+
 template:
   params:
     bootswatch: flatly
+
+home:
+  links:
+  - text: "Source on GitHub"
+    href: https://github.com/PAS-AGRO-PAS/ram
+  - text: "Report Issues"
+    href: https://github.com/PAS-AGRO-PAS/ram/issues
 
 navbar:
   structure:

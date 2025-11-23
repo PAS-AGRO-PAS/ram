@@ -25,21 +25,47 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
       )
       rv$builder_resources <- bind_rows(rv$builder_resources, new)
       DT::replaceData(builder_res_proxy, rv$builder_resources, resetPaging = FALSE)
+      rv$builder_activities <- ensure_builder_activity_columns(
+        rv$builder_activities,
+        rv$builder_resources$Name
+      )
+      DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
     })
     
     # Remove selected resource and update the DT
     observeEvent(input$del_res, {
       sel <- input$res_tbl_rows_selected
       if (length(sel)) {
+        removed <- rv$builder_resources$Name[sel]
         rv$builder_resources <- rv$builder_resources[-sel, , drop = FALSE]
         DT::replaceData(builder_res_proxy, rv$builder_resources, resetPaging = FALSE)
+        if (length(removed)) {
+          keep_cols <- setdiff(names(rv$builder_activities), removed)
+          rv$builder_activities <- rv$builder_activities[, keep_cols, drop = FALSE]
+          rv$builder_activities <- ensure_builder_activity_columns(
+            rv$builder_activities,
+            rv$builder_resources$Name
+          )
+          DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
+        }
       }
     })
     
     # Add a new activity and update its DT
     observeEvent(input$add_act, {
       req(input$act_name)
-      coefs <- sapply(rv$builder_resources$Name, function(nm) input[[paste0("coef_", nm)]])
+      if (!nrow(rv$builder_resources)) {
+        shiny::showNotification("Add at least one resource before defining activities.", type = "error")
+        return()
+      }
+      coefs <- vapply(
+        rv$builder_resources$Name,
+        function(nm) {
+          val <- input[[paste0("coef_", nm)]]
+          if (is.null(val)) 0 else val
+        },
+        numeric(1)
+      )
       new <- data.frame(
         Name      = input$act_name,
         Objective = input$act_obj,
@@ -85,5 +111,69 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
       filename = "builder_activities.xlsx",
       content  = function(file) openxlsx::write.xlsx(rv$builder_activities, file)
     )
+    
+    observeEvent(input$handoff_solver, {
+      if (!nrow(rv$builder_resources) || !nrow(rv$builder_activities)) {
+        shiny::showNotification("Add at least one resource and activity before opening the solver.", type = "error")
+        return()
+      }
+      solver_resources <- builder_resources_to_solver(rv$builder_resources)
+      solver_activities <- builder_activities_to_solver(
+        rv$builder_activities,
+        solver_resources$resource
+      )
+      payload <- list(
+        resources = solver_resources,
+        activities = solver_activities
+      )
+      json_txt <- jsonlite::toJSON(payload, dataframe = "rows", auto_unbox = TRUE, digits = NA)
+      # Base64-encode so query parsing never splits on '=' or '&' inside the JSON
+      payload_b64 <- jsonlite::base64_enc(json_txt)
+      session$sendCustomMessage(
+        "ram-open-solver",
+        list(payload = payload_b64, encoding = "base64")
+      )
+      shiny::showNotification("Opening solver with your current builder tables…", type = "message")
+    })
   })
+}
+
+ensure_builder_activity_columns <- function(df, resource_names) {
+  df <- as.data.frame(df, stringsAsFactors = FALSE)
+  base_cols <- c("Name", "Objective")
+  if (!length(resource_names)) {
+    return(df[, intersect(names(df), base_cols), drop = FALSE])
+  }
+  n_rows <- nrow(df)
+  missing <- setdiff(resource_names, names(df))
+  if (length(missing)) {
+    # Fill all missing resource columns at once; works even with zero rows
+    df[missing] <- rep(list(rep(0, n_rows)), length(missing))
+  }
+  ordered_cols <- c(base_cols, resource_names)
+  keep <- intersect(ordered_cols, names(df))
+  df[, keep, drop = FALSE]
+}
+
+builder_resources_to_solver <- function(df) {
+  out <- data.frame(
+    resource     = df$Name,
+    availability = df$Availability,
+    direction    = df$Direction,
+    stringsAsFactors = FALSE
+  )
+  validate_resource_upload(out)
+}
+
+builder_activities_to_solver <- function(df, resource_names) {
+  out <- df
+  names(out)[match("Name", names(out))] <- "activity"
+  names(out)[match("Objective", names(out))] <- "objective"
+  missing <- setdiff(resource_names, names(out))
+  if (length(missing)) {
+    stop("Missing coefficients for: ", paste(missing, collapse = ", "))
+  }
+  ordered_cols <- c("activity", resource_names, "objective")
+  out <- out[, ordered_cols, drop = FALSE]
+  validate_activity_upload(out)
 }

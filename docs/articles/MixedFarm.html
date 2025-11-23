@@ -48,7 +48,14 @@
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/PAS-AGRO-PAS/ram/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -70,7 +77,7 @@
       <h1 data-toc-skip>Mixed Farm Optimisation</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/PAS-AGRO-PAS/ram/blob/HEAD/vignettes/MixedFarm.Rmd" class="external-link"><code>vignettes/MixedFarm.Rmd</code></a></small>
       <div class="hidden name"><code>MixedFarm.Rmd</code></div>
 
     </div>
@@ -86,74 +93,96 @@ analysis is to determine the profit‐maximizing allocation of 15 ha of
 land, 350 h of labor and 400 kg of available nitrogen among four winter
 crops and a temporary pasture for sheep. Each crop carries standard
 agronomic area bounds (e.g. oat between 2 ha and 8 ha), and pasture must
-lie between 2 ha and 4 ha. Margins (€/ha) and resource requirements
-(land, labor, nitrogen) are summarized in Table 1.</p>
-<p><strong>Table 1.</strong> Resource requirements, margins and area
-bounds for each activity.</p>
-<table class="table">
+lie between 2 ha and 4 ha. All assumptions are captured in a single
+specification table so the narrative, code, and Shiny app share one
+source of truth.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">activity_specs</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tibble/man/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">activity</span>, <span class="op">~</span><span class="va">land</span>, <span class="op">~</span><span class="va">labor</span>, <span class="op">~</span><span class="va">nitrogen</span>, <span class="op">~</span><span class="va">margin</span>, <span class="op">~</span><span class="va">min_area</span>, <span class="op">~</span><span class="va">max_area</span>,</span>
+<span>  <span class="st">"oat"</span>,      <span class="fl">1</span>,      <span class="fl">20</span>,      <span class="fl">80</span>,       <span class="fl">400</span>,     <span class="fl">2</span>,         <span class="fl">8</span>,</span>
+<span>  <span class="st">"barley"</span>,   <span class="fl">1</span>,      <span class="fl">25</span>,     <span class="fl">100</span>,       <span class="fl">450</span>,     <span class="fl">1</span>,         <span class="fl">6</span>,</span>
+<span>  <span class="st">"lupin"</span>,    <span class="fl">1</span>,      <span class="fl">15</span>,       <span class="fl">0</span>,       <span class="fl">350</span>,     <span class="fl">2</span>,         <span class="fl">5</span>,</span>
+<span>  <span class="st">"fava"</span>,     <span class="fl">1</span>,      <span class="fl">30</span>,      <span class="fl">30</span>,       <span class="fl">500</span>,     <span class="fl">1</span>,         <span class="fl">3</span>,</span>
+<span>  <span class="st">"pasture"</span>,  <span class="fl">1</span>,      <span class="fl">10</span>,       <span class="fl">0</span>,       <span class="fl">360</span>,     <span class="fl">2</span>,         <span class="fl">4</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">activity_specs</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    activity <span class="op">=</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/stringr/man/case.html" class="external-link">str_to_title</a></span><span class="op">(</span><span class="va">activity</span><span class="op">)</span>,</span>
+<span>    area_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">min_area</span>, <span class="st">"\u2013"</span>, <span class="va">max_area</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span>Activity <span class="op">=</span> <span class="va">activity</span>, `Land (ha)` <span class="op">=</span> <span class="va">land</span>, `Labor (h)` <span class="op">=</span> <span class="va">labor</span>,</span>
+<span>         `Nitrogen (kg)` <span class="op">=</span> <span class="va">nitrogen</span>, `Margin (€/ha)` <span class="op">=</span> <span class="va">margin</span>,</span>
+<span>         `Area bounds (ha)` <span class="op">=</span> <span class="va">area_bounds</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Table 1. Resource requirements, margins, and area bounds for each activity."</span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<caption>Table 1. Resource requirements, margins, and area bounds for
+each activity.</caption>
 <colgroup>
-<col width="17%">
 <col width="12%">
-<col width="12%">
-<col width="17%">
-<col width="17%">
-<col width="21%">
+<col width="13%">
+<col width="13%">
+<col width="18%">
+<col width="18%">
+<col width="22%">
 </colgroup>
 <thead><tr class="header">
-<th align="center">Activity</th>
-<th align="center">Land (ha)</th>
-<th align="center">Labor (h)</th>
-<th align="center">Nitrogen (kg)</th>
-<th align="center">Margin (€/ha)</th>
-<th align="center">Area bounds (ha)</th>
+<th align="left">Activity</th>
+<th align="right">Land (ha)</th>
+<th align="right">Labor (h)</th>
+<th align="right">Nitrogen (kg)</th>
+<th align="right">Margin (€/ha)</th>
+<th align="left">Area bounds (ha)</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center"><strong>Oat</strong></td>
-<td align="center">1</td>
-<td align="center">20</td>
-<td align="center">80</td>
-<td align="center">400</td>
-<td align="center">2 – 8</td>
+<td align="left">Oat</td>
+<td align="right">1</td>
+<td align="right">20</td>
+<td align="right">80</td>
+<td align="right">400</td>
+<td align="left">2 – 8</td>
 </tr>
 <tr class="even">
-<td align="center"><strong>Barley</strong></td>
-<td align="center">1</td>
-<td align="center">25</td>
-<td align="center">100</td>
-<td align="center">450</td>
-<td align="center">1 – 6</td>
+<td align="left">Barley</td>
+<td align="right">1</td>
+<td align="right">25</td>
+<td align="right">100</td>
+<td align="right">450</td>
+<td align="left">1 – 6</td>
 </tr>
 <tr class="odd">
-<td align="center"><strong>Lupin</strong></td>
-<td align="center">1</td>
-<td align="center">15</td>
-<td align="center">0</td>
-<td align="center">350</td>
-<td align="center">2 – 5</td>
+<td align="left">Lupin</td>
+<td align="right">1</td>
+<td align="right">15</td>
+<td align="right">0</td>
+<td align="right">350</td>
+<td align="left">2 – 5</td>
 </tr>
 <tr class="even">
-<td align="center"><strong>Fava</strong></td>
-<td align="center">1</td>
-<td align="center">30</td>
-<td align="center">30</td>
-<td align="center">500</td>
-<td align="center">1 – 3</td>
+<td align="left">Fava</td>
+<td align="right">1</td>
+<td align="right">30</td>
+<td align="right">30</td>
+<td align="right">500</td>
+<td align="left">1 – 3</td>
 </tr>
 <tr class="odd">
-<td align="center"><strong>Pasture</strong></td>
-<td align="center">1</td>
-<td align="center">10</td>
-<td align="center">0</td>
-<td align="center">360</td>
-<td align="center">2 – 4</td>
+<td align="left">Pasture</td>
+<td align="right">1</td>
+<td align="right">10</td>
+<td align="right">0</td>
+<td align="right">360</td>
+<td align="left">2 – 4</td>
 </tr>
 </tbody>
 </table>
 <p>We formulate a linear program to maximize total gross margin subject
-to resource and area‐bound constraints. The following sections describe
-the model construction, solution and sensitivity analysis using the
-<code>ram</code> package.</p>
+to resource and area constraints. The following sections describe the
+model construction, solution, and sensitivity analysis using the
+<code>ram</code> package (the same data ships as the default example
+inside <code>ram::run_app(mode = "solve")</code> or via the builder →
+solver hand-off).</p>
 </div>
 <div class="section level2">
 <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>
@@ -161,47 +190,36 @@ the model construction, solution and sensitivity analysis using the
 <div class="section level3">
 <h3 id="define-resource-constraints">Define Resource Constraints<a class="anchor" aria-label="anchor" href="#define-resource-constraints"></a>
 </h3>
-<p>We first declare the available resources and the minimum/maximum area
-constraints for each crop and pasture. The function
-<code><a href="../reference/define_resources.html">define_resources()</a></code> accepts three parallel vectors: resource
-names, availabilities, and constraint directions (<code>"≤"</code> or
-<code>"≥"</code>).</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Step 1: Define Resource Constraints (flexible min/max for each crop)</span></span>
-<span><span class="va">resources</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_resources.html">define_resources</a></span><span class="op">(</span></span>
-<span>  resources <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="co"># total availables</span></span>
-<span>    <span class="st">"land"</span>, <span class="st">"labor"</span>, <span class="st">"nitrogen"</span>,</span>
-<span>    <span class="co"># per‐crop bounds</span></span>
-<span>    <span class="st">"oat_min"</span>,   <span class="st">"oat_max"</span>,</span>
-<span>    <span class="st">"barley_min"</span>,<span class="st">"barley_max"</span>,</span>
-<span>    <span class="st">"lupin_min"</span>, <span class="st">"lupin_max"</span>,</span>
-<span>    <span class="st">"fava_min"</span>,  <span class="st">"fava_max"</span>,</span>
-<span>    <span class="st">"pasture_min"</span>,<span class="st">"pasture_max"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  availability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="co"># totals</span></span>
-<span>     <span class="fl">15</span>,    <span class="fl">350</span>,    <span class="fl">400</span>,</span>
-<span>    <span class="co"># bounds</span></span>
-<span>      <span class="fl">2</span>,      <span class="fl">8</span>,   <span class="co"># oat</span></span>
-<span>      <span class="fl">1</span>,      <span class="fl">6</span>,   <span class="co"># barley</span></span>
-<span>      <span class="fl">2</span>,      <span class="fl">5</span>,   <span class="co"># lupin</span></span>
-<span>      <span class="fl">1</span>,      <span class="fl">3</span>,   <span class="co"># fava</span></span>
-<span>      <span class="fl">2</span>,      <span class="fl">4</span>    <span class="co"># pasture</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="co"># totals all &lt;=</span></span>
-<span>    <span class="st">"&lt;="</span>,   <span class="st">"&lt;="</span>,   <span class="st">"&lt;="</span>,</span>
-<span>    <span class="co"># minimums &gt;=, maximums &lt;=</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,  <span class="co"># oat</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,  <span class="co"># barley</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,  <span class="co"># lupin</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>,  <span class="co"># fava</span></span>
-<span>    <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span>   <span class="co"># pasture</span></span>
-<span>  <span class="op">)</span></span>
+<p>We declare the available totals (land, labor, nitrogen) and then
+derive the per-activity bounds directly from
+<code>activity_specs</code>, ensuring every downstream object stays
+consistent.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">resource_totals</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tibble/man/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">resource</span>, <span class="op">~</span><span class="va">availability</span>, <span class="op">~</span><span class="va">direction</span>,</span>
+<span>  <span class="st">"land"</span>,        <span class="fl">15</span>,          <span class="st">"&lt;="</span>,</span>
+<span>  <span class="st">"labor"</span>,      <span class="fl">350</span>,          <span class="st">"&lt;="</span>,</span>
+<span>  <span class="st">"nitrogen"</span>,   <span class="fl">400</span>,          <span class="st">"&lt;="</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">resources</span><span class="op">)</span></span>
+<span><span class="va">resource_bounds</span> <span class="op">&lt;-</span> <span class="va">activity_specs</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">activity</span>, <span class="va">min_area</span>, <span class="va">max_area</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">min_area</span>, <span class="va">max_area</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"bound_type"</span>, values_to <span class="op">=</span> <span class="st">"availability"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    resource  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">activity</span>, <span class="fu">if_else</span><span class="op">(</span><span class="va">bound_type</span> <span class="op">==</span> <span class="st">"min_area"</span>, <span class="st">"_min"</span>, <span class="st">"_max"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    direction <span class="op">=</span> <span class="fu">if_else</span><span class="op">(</span><span class="va">bound_type</span> <span class="op">==</span> <span class="st">"min_area"</span>, <span class="st">"&gt;="</span>, <span class="st">"&lt;="</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">resource</span>, <span class="va">availability</span>, <span class="va">direction</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resources_tbl</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">resource_totals</span>, <span class="va">resource_bounds</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resources</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_resources.html">define_resources</a></span><span class="op">(</span></span>
+<span>  resources   <span class="op">=</span> <span class="va">resources_tbl</span><span class="op">$</span><span class="va">resource</span>,</span>
+<span>  availability <span class="op">=</span> <span class="va">resources_tbl</span><span class="op">$</span><span class="va">availability</span>,</span>
+<span>  direction    <span class="op">=</span> <span class="va">resources_tbl</span><span class="op">$</span><span class="va">direction</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resources</span></span>
 <span><span class="co">#&gt;       resource availability direction</span></span>
 <span><span class="co">#&gt; 1         land           15        &lt;=</span></span>
 <span><span class="co">#&gt; 2        labor          350        &lt;=</span></span>
@@ -220,60 +238,44 @@ names, availabilities, and constraint directions (<code>"≤"</code> or
 <div class="section level3">
 <h3 id="specify-activities">Specify Activities<a class="anchor" aria-label="anchor" href="#specify-activities"></a>
 </h3>
-<p>Next, we assemble the technical matrix, whose rows correspond to the
-resources declared above, and whose columns correspond to the five
-activities. Each entry is the per‐unit requirement (or, for area‐bounds
-rows, an indicator). The vector objective lists the margin for each
-activity.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Step 2: Define Activities</span></span>
-<span><span class="va">activity_requirements_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="co"># land (ha)</span></span>
-<span>     <span class="fl">1</span>,    <span class="fl">1</span>,    <span class="fl">1</span>,    <span class="fl">1</span>,     <span class="fl">1</span>, </span>
-<span>    <span class="co"># labor (h)</span></span>
-<span>    <span class="fl">20</span>,   <span class="fl">25</span>,   <span class="fl">15</span>,   <span class="fl">30</span>,    <span class="fl">10</span>, </span>
-<span>    <span class="co"># nitrogen (kg)</span></span>
-<span>    <span class="fl">80</span>,  <span class="fl">100</span>,    <span class="fl">0</span>,   <span class="fl">30</span>,     <span class="fl">0</span>, </span>
-<span>    <span class="co"># bounds indicator rows (1 for that crop, 0 else)</span></span>
-<span>    <span class="co"># oat_min</span></span>
-<span>     <span class="fl">1</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># oat_max</span></span>
-<span>     <span class="fl">1</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># barley_min</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">1</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># barley_max</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">1</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># lupin_min</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">1</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># lupin_max</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">1</span>,    <span class="fl">0</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># fava_min</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">1</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># fava_max</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">1</span>,     <span class="fl">0</span>,</span>
-<span>    <span class="co"># pasture_min</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">1</span>,</span>
-<span>    <span class="co"># pasture_max</span></span>
-<span>     <span class="fl">0</span>,   <span class="fl">0</span>,    <span class="fl">0</span>,    <span class="fl">0</span>,     <span class="fl">1</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">resources</span><span class="op">)</span>,</span>
-<span>  byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="va">resources</span><span class="op">$</span><span class="va">resource</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oat"</span>,<span class="st">"barley"</span>,<span class="st">"lupin"</span>,<span class="st">"fava"</span>,<span class="st">"pasture"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
+<p>The technical matrix mirrors the resource order: totals first, then
+each activity’s minimum and maximum indicator rows. Using the
+specification tibble keeps the code readable.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">activity_names</span> <span class="op">&lt;-</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">activity</span></span>
+<span></span>
+<span><span class="va">indicator_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">activity_names</span>, <span class="kw">function</span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">activity_names</span> <span class="op">==</span> <span class="va">name</span><span class="op">)</span></span>
+<span>  <span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">vec</span>, nrow <span class="op">=</span> <span class="fl">1</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">NULL</span>, <span class="va">activity_names</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">min_row</span> <span class="op">&lt;-</span> <span class="va">mat</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">min_row</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">name</span>, <span class="st">"_min"</span><span class="op">)</span></span>
+<span>  <span class="va">max_row</span> <span class="op">&lt;-</span> <span class="va">mat</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">max_row</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">name</span>, <span class="st">"_max"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">min_row</span>, <span class="va">max_row</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bound_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">indicator_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tech_totals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  land     <span class="op">=</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">land</span>,</span>
+<span>  labor    <span class="op">=</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">labor</span>,</span>
+<span>  nitrogen <span class="op">=</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">nitrogen</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">objective</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>oat<span class="op">=</span><span class="fl">400</span>, barley<span class="op">=</span><span class="fl">450</span>, lupin<span class="op">=</span><span class="fl">350</span>, fava<span class="op">=</span><span class="fl">500</span>, pasture<span class="op">=</span><span class="fl">360</span><span class="op">)</span></span>
+<span><span class="va">activity_requirements_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">tech_totals</span>, <span class="va">bound_rows</span><span class="op">)</span></span>
+<span><span class="va">row_order</span> <span class="op">&lt;-</span> <span class="va">resources_tbl</span><span class="op">$</span><span class="va">resource</span></span>
+<span><span class="va">activity_requirements_matrix</span> <span class="op">&lt;-</span> <span class="va">activity_requirements_matrix</span><span class="op">[</span><span class="va">row_order</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">objective</span> <span class="op">&lt;-</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">margin</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">objective</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">activity_specs</span><span class="op">$</span><span class="va">activity</span></span>
 <span></span>
 <span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_activities.html">define_activities</a></span><span class="op">(</span></span>
-<span>  activities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">activity_requirements_matrix</span><span class="op">)</span>,</span>
+<span>  activities <span class="op">=</span> <span class="va">activity_names</span>,</span>
 <span>  activity_requirements_matrix <span class="op">=</span> <span class="va">activity_requirements_matrix</span>,</span>
 <span>  objective <span class="op">=</span> <span class="va">objective</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">activities</span><span class="op">)</span></span>
+<span><span class="va">activities</span></span>
 <span><span class="co">#&gt;         activity land labor nitrogen oat_min oat_max barley_min barley_max</span></span>
 <span><span class="co">#&gt; oat          oat    1    20       80       1       1          0          0</span></span>
 <span><span class="co">#&gt; barley    barley    1    25      100       0       0          1          1</span></span>
@@ -292,7 +294,7 @@ activity.</p>
 </h3>
 <p>The model is constructed via <code><a href="../reference/create_ram_model.html">create_ram_model()</a></code> and
 solved in the maximization sense with <code><a href="../reference/solve_ram.html">solve_ram()</a></code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Step 3: Build and Solve the Model</span></span>
 <span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_ram_model.html">create_ram_model</a></span><span class="op">(</span><span class="va">resources</span>, <span class="va">activities</span><span class="op">)</span></span>
 <span><span class="va">solution</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/solve_ram.html">solve_ram</a></span><span class="op">(</span><span class="va">model</span>, direction <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span></code></pre></div>
@@ -304,41 +306,16 @@ solved in the maximization sense with <code><a href="../reference/solve_ram.html
 <div class="section level3">
 <h3 id="optimal-allocation">Optimal Allocation<a class="anchor" aria-label="anchor" href="#optimal-allocation"></a>
 </h3>
-<p>The optimal area (ha) for each activity is extracted from
-<code>solution$optimal_activities</code> and presented in Table 2.</p>
-<p>Table 2. Optimal area allocation (ha) under maximized gross
-margin.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  Activity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">solution</span><span class="op">$</span><span class="va">optimal_activities</span><span class="op">)</span>,</span>
-<span>  Area_ha  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">solution</span><span class="op">$</span><span class="va">optimal_activities</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">DT</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></span><span class="op">(</span></span>
-<span>  <span class="va">dat</span>,</span>
-<span>  caption <span class="op">=</span> <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rstudio.github.io/htmltools/reference/builder.html" class="external-link">tags</a></span><span class="op">$</span><span class="fu">caption</span><span class="op">(</span></span>
-<span>    style <span class="op">=</span> <span class="st">"caption-side: top; text-align: left;"</span>,</span>
-<span>    <span class="st">"Table 2. Optimal area allocation (ha) under maximized gross margin."</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  rownames <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    autoWidth <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    columnDefs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>width <span class="op">=</span> <span class="st">'3cm'</span>, targets <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,  <span class="co"># first column (activity)</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>width <span class="op">=</span> <span class="st">'2cm'</span>, targets <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>   <span class="co"># second column (level)</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">DT</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/formatCurrency.html" class="external-link">formatRound</a></span><span class="op">(</span><span class="st">"Area_ha"</span>, <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"caption":"<caption style=\"caption-side: top; text-align: left;\">Table 2. Optimal area allocation (ha) under maximized gross margin.<\/caption>","data":[["oat","barley","lupin","fava","pasture"],[2,1.5,4.5,3,4]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Activity<\/th>\n      <th>Area_ha<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"autoWidth":true,"columnDefs":[{"targets":1,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"width":"3cm","targets":0},{"width":"2cm","targets":1},{"className":"dt-right","targets":1},{"name":"Activity","targets":0},{"name":"Area_ha","targets":1}],"order":[],"orderClasses":false},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":["options.columnDefs.0.render"],"jsHooks":[]}</script><p>The maximum total gross margin achieved is:</p>
+<p><code><a href="../reference/summary_ram.html">summary_ram()</a></code> consolidates the optimal activities and
+the objective value; <code><a href="../reference/plot_ram.html">plot_ram()</a></code> provides the accompanying
+visual.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Maximum gross margin (EUR):"</span>, <span class="va">solution</span><span class="op">$</span><span class="va">objective_value</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Maximum gross margin (EUR): 5990</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summary_ram.html">summary_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["oat","barley","lupin","fava","pasture","Objective value"],[2,1.5,4.5,3,4,5990]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Activity<\/th>\n      <th>Level<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":6,"columnDefs":[{"className":"dt-right","targets":1},{"name":"Activity","targets":0},{"name":"Level","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[6,10,25,50,100]},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ram.html">plot_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span></code></pre></div>
 <div class="plotly html-widget html-fill-item" id="htmlwidget-e5c8c404fe174e4c81bd" style="width:960px;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"visdat":{"be5d1bb362e4":["function () ","plotlyVisDat"]},"cur_data":"be5d1bb362e4","attrs":{"be5d1bb362e4":{"x":["oat","barley","lupin","fava","pasture"],"y":[2,1.5000000000000002,4.5,2.9999999999999996,4],"marker":{"color":"blue"},"hoverinfo":"x+y","name":"Level","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Optimal Resource Allocation","xaxis":{"domain":[0,1],"automargin":true,"title":"Activity","type":"category","categoryorder":"array","categoryarray":["barley","fava","lupin","oat","pasture"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Level"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["oat","barley","lupin","fava","pasture"],"y":[2,1.5000000000000002,4.5,2.9999999999999996,4],"marker":{"color":"blue","line":{"color":"rgba(31,119,180,1)"}},"hoverinfo":["x+y","x+y","x+y","x+y","x+y"],"name":"Level","type":"bar","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"visdat":{"1b5fb4b36325d":["function () ","plotlyVisDat"]},"cur_data":"1b5fb4b36325d","attrs":{"1b5fb4b36325d":{"x":["oat","barley","lupin","fava","pasture"],"y":[2,1.5000000000000002,4.5,2.9999999999999996,4],"marker":{"color":"blue"},"hoverinfo":"x+y","name":"Level","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Optimal Resource Allocation","xaxis":{"domain":[0,1],"automargin":true,"title":"Activity","type":"category","categoryorder":"array","categoryarray":["barley","fava","lupin","oat","pasture"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Level"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["oat","barley","lupin","fava","pasture"],"y":[2,1.5000000000000002,4.5,2.9999999999999996,4],"marker":{"color":"blue","line":{"color":"rgba(31,119,180,1)"}},"hoverinfo":["x+y","x+y","x+y","x+y","x+y"],"name":"Level","type":"bar","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level3">
 <h3 id="shadow-prices-and-sensitivity">Shadow Prices and Sensitivity<a class="anchor" aria-label="anchor" href="#shadow-prices-and-sensitivity"></a>
@@ -351,28 +328,11 @@ extra unit of that resource.</p>
 <h4 id="step-5-sensitivity-analysis">Step 5: Sensitivity Analysis<a class="anchor" aria-label="anchor" href="#step-5-sensitivity-analysis"></a>
 </h4>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/sensitivity_ram.html">sensitivity_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       resource direction availability shadow_price lower_bound upper_bound</span></span>
-<span><span class="co">#&gt; 1         land        &lt;=           15            0           0           0</span></span>
-<span><span class="co">#&gt; 2        labor        &lt;=          350           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 3     nitrogen        &lt;=          400           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 4      oat_min        &gt;=            2           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 5      oat_max        &lt;=            8           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 6   barley_min        &gt;=            1           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 7   barley_max        &lt;=            6           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 8    lupin_min        &gt;=            2           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 9    lupin_max        &lt;=            5           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 10    fava_min        &gt;=            1           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 11    fava_max        &lt;=            3           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 12 pasture_min        &gt;=            2           NA          NA          NA</span></span>
-<span><span class="co">#&gt; 13 pasture_max        &lt;=            4           NA          NA          NA</span></span>
-<span><span class="co"># Compute sensitivity</span></span>
-<span><span class="va">sens</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensitivity_ram.html">sensitivity_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">sens</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensitivity_ram.html">sensitivity_ram</a></span><span class="op">(</span><span class="va">solution</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Render as a clean datatable</span></span>
 <span><span class="fu">DT</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></span><span class="op">(</span></span>
 <span>  <span class="va">sens</span>,</span>
-<span>  caption <span class="op">=</span> <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rstudio.github.io/htmltools/reference/builder.html" class="external-link">tags</a></span><span class="op">$</span><span class="fu">caption</span><span class="op">(</span></span>
+<span>  caption <span class="op">=</span> <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/htmltools/man/builder.html" class="external-link">tags</a></span><span class="op">$</span><span class="fu">caption</span><span class="op">(</span></span>
 <span>    style <span class="op">=</span> <span class="st">"caption-side: top; text-align: left;"</span>,</span>
 <span>    <span class="st">"Table 3. Sensitivity analysis of constraints (shadow prices and allowable ranges)."</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -398,24 +358,19 @@ extra unit of that resource.</p>
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p>The sensitivity analysis in Table 3 highlights which constraints are
-active at the optimum and how marginal changes in resource availability
-would affect the maximum gross margin. A shadow price of zero for land
-indicates that, under the current parameterisation, land is not the
-binding constraint—there is slack capacity. The absence of numeric
-shadow prices (NA) for labor, nitrogen, and the per‐crop bounds
-signifies that these constraints either are non‐binding or lie outside
-the solver’s range reporting.</p>
-<p>Notably, all minimum area bounds for the four winter crops and the
-temporary pasture are respected exactly (the solution values coincide
-with their minimum or maximum limits), confirming that these structural
-requirements shape the optimal plan. Practitioners may use these
-insights to decide whether relaxing or tightening particular bounds
-(e.g., allowing more pasture area or increasing labor availability)
-could unlock additional profitability. Moreover, this framework can
-readily incorporate further enterprises (e.g., olive groves, poultry) or
-environmental targets (e.g., nitrate leaching limits) by augmenting the
-resources and activities matrices accordingly.</p>
+<p>The sensitivity analysis highlights which constraints are binding at
+the optimum and therefore command a non-zero shadow price. In this
+scenario, the minimum area bounds for oat, barley, and lupin are binding
+(shadow price &gt; 0), implying that allowing an extra hectare of any of
+those crops would increase the gross margin by the indicated amount.
+Land, labor, nitrogen, and the remaining bounds exhibit zero prices,
+signalling slack capacity under the current assumptions.</p>
+<p>Because every input stems from <code>activity_specs</code>, exploring
+what-if scenarios is as simple as editing the tibble (or loading
+alternative CSVs inside <code><a href="../reference/run_app.html">ram::run_app()</a></code>). Practitioners can
+therefore iterate between scripted analyses like this vignette and the
+interactive builder → solver workflow without re-entering data, ensuring
+evidence-based decisions remain consistent across tools.</p>
 </div>
   </div>
 

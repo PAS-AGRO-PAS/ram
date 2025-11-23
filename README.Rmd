@@ -50,14 +50,22 @@ ram::run_app(mode = "builder") # explicitly launch "builder" mode
 
 The app uses `with_golem_options()` to pass the mode correctly and initializes external resources (logo, theming) automatically.
 
+## Builder → Solver workflow
+
+- In **builder** mode, define your resources and activities, then click **Open In Solver** in the sidebar.
+- A new **solve** tab opens pre-loaded with your builder tables; just hit **Solve Model** to compute results.
+- The handoff keeps column alignment intact, so custom resource names and coefficients carry over without extra CSV steps.
+
 ---
 
 # App Highlights
 
 * **Dynamic theming** via `{bslib}` with brand-based colors and light/dark toggle.
-* **Dynamic logo** adapts to theme and displays in the app header.
-* **Solve Mode**: upload or edit CSVs, define objectives, run the LP, view results & sensitivity, and explore interactive plots.
-* **Builder Mode**: define resources and activities on-the-fly, then export CSV or XLSX.
+* **Dynamic logo** rendered via `uiOutput()` so it can react to future theme changes.
+* **Solve Mode**: upload or edit CSVs (inline edits now update the solver inputs), define objectives, run the LP, view results & sensitivity, and explore interactive plots.
+* **Data validation & feedback**: CSV uploads are checked for required columns, numeric values, and constraint directions, while solver failures show actionable notifications plus downloadable lpSolve reports.
+* **Builder Mode**: define resources and activities on-the-fly; resource/activity tables stay column-synced automatically so CSV/XLSX exports remain consistent, and a one-click “Open in Solver” handoff reuses the same Shiny session.
+* **Custom resource support**: solver outputs now adapt to whatever resource columns you define, so the optimization summary table always matches your model.
 
 ---
 
@@ -147,13 +155,3 @@ Contributions welcome — please [open issues](https://github.com/PAS-AGRO-PAS/r
 # License
 
 Licensed under MIT — see [LICENSE](https://github.com/PAS-AGRO-PAS/ram/blob/main/LICENSE.md).
-
----
-
-# 📝 Summary of Improvements
-
-* Unified `run_app()` respects both `"solve"` and `"builder"` modes.
-* Enhanced branding & light/dark theming via `{bslib}`.
-* Dynamic logo integration in the app header.
-* Clear explanations of both interactive and programmatic workflows.
-* Emphasis on interactive features: plots, sensitivity analysis, exports.
