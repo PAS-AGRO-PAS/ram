@@ -20,60 +20,56 @@ knitr::opts_chunk$set(
 
 Welcome to the user manual for the **PAS-AGRO-PAS** Shiny application. This application was developed to optimize the allocation of agricultural resources and activities. This manual will guide you through the application's features and how to use them.
 
-# Instructions for Use
+# Quick start
 
-## Templates & Upload
+The app has two modes:
 
-In the sidebar, you will find sections to download CSV templates and upload your own CSV files.
+- **Solve** (default): upload or edit resource/activity tables, set the objective direction, and run the solver.
+- **Builder**: add resources/activities interactively with synced columns, then click **Open In Solver** to hand off tables to the solver in a new tab.
 
-- **Download Templates**: Click the buttons to download the resource and activity templates.
-- **Upload Files**: Use the inputs to upload your resource and activity CSV files.
+Launch with:
 
-## Add / Remove Rows
+```r
+ram::run_app(mode = "solve")   # or mode = "builder"
+```
 
-You can add or remove rows in the resource and activity tables.
+# Data requirements (both modes)
 
-- **Add Rows**: Click the "Add Resource" or "Add Activity" buttons.
-- **Remove Rows**: Select a row in the table and click "Remove Resource" or "Remove Activity".
+- **Resources table**: columns `resource` (unique, non-empty), `availability` (numeric), `direction` (<= or >=).
+- **Activities table**: columns `activity` (unique, non-empty), one or more resource coefficient columns (numeric), and `objective` (numeric).
+- Uploads and inline edits are validated. If an edit fails (non-numeric, duplicate names, bad direction), the app reverts to the previous table and shows a notification.
 
-## Solve the Model
+# Solve mode workflow
 
-Set the objective (maximize or minimize) and click the "Solve Model" button to solve the optimization model.
+1. **Templates & Uploads** (sidebar): download CSV templates, or upload your own resource/activity CSVs. Uploading replaces the current tables and clears old solutions.
+2. **Inline edits**: click cells in the resources/activities tables to edit values. Edits are validated immediately.
+3. **Objective**: choose Maximize or Minimize.
+4. **Solve**: click **Solve Model**. On success you get:
+   - **Optimal Solution**: activity levels plus resource usage, with horizontal scroll for wide tables.
+   - **Objective value** and **Activity plot**.
+   - **Sensitivity**: shadow prices/allowable ranges when available.
+   - **Solver report download** (.rds of the lpSolve result).
 
-# Features
+# Builder mode workflow
 
-## Resource and Activity Tables
+1. Add resources with **Add Resource** (names must be unique and non-empty).
+2. Add activities with **Add Activity** after at least one resource exists; coefficients default to 0 and all resource columns stay aligned.
+3. Remove rows with the paired **Remove** buttons.
+4. Export CSV/XLSX for both tables at any time.
+5. Click **Open In Solver** to send the current tables (base64 JSON) to a new solve-mode tab; no manual CSV steps needed.
 
-The tables are interactive and allow direct editing. You can modify the values of availability, direction, and resource requirements.
+# Exports
 
-- Resources
-Define each constraint by row:
-  - resource (e.g. land, labor, nitrogen or bound like oat_min)
-  - availability (numeric)
-  - direction (<= or >=)
+- **Solve mode**: download the current resources/activities as CSV (sidebar buttons).
+- **Builder mode**: download resources/activities as CSV or XLSX (sidebar buttons).
 
-- Activities
-Each row is an activity (e.g. a crop) with columns:
-  - resource coefficients (how much of each resource/unit)
-  - objective (per-unit margin or cost)
+# Tips
 
-## Optimization Results
+- Keep resource/activity names unique; duplicate uploads are rejected.
+- If you see “No matching records” in tables, upload/enter data again; edits and uploads always refresh the displayed data.
+- The solver tables remain visible after solving; uploads or edits replace them.
 
-After solving the model, you can view the results in the following tabs:
-
-- **Optimal Solution**: Shows the optimal levels of each activity and the objective value.
-- **Activity Plot**: Interactive plot with the optimal levels of each activity.
-- **Sensitivity Analysis**: Shows how the results change with variations in parameters.
-
-# Exporting Results
-
-You can export the current data from the resource and activity tables as CSV files using the download buttons.
-Download Table buttons appear above each interactive table.
-Exports exactly what you see, in CSV form, ready for your records.
-
----
-
-## Contact & Further Reading
+# Contact & Further Reading
 
 For advanced usage and code examples see the package’s GitHub repository,
 or the formal documentation vignettes included in the ram package.

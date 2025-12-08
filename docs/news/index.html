@@ -51,11 +51,23 @@
     </div>
 
     <div class="section level2">
+<h2 class="page-header" data-toc-text="0.0.0.9003" id="ram-0009003-2025-11-10">
+<a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9003" class="external-link">ram 0.0.0.9003</a> <small>2025-11-10</small>
+<a class="anchor" aria-label="anchor" href="#ram-0009003-2025-11-10"></a></h2>
+<div class="section level3">
+<h3 id="id_-bug-fixes--stability-0-0-0-9003">🛠 Bug Fixes &amp; Stability<a class="anchor" aria-label="anchor" href="#id_-bug-fixes--stability-0-0-0-9003"></a></h3>
+<ul><li>Builder ➜ solver handoff now base64-encodes the payload so query parsing never truncates JSON; custom resources/activities reliably appear in the new solve tab.</li>
+<li>Solve-mode results table now derives resource usage columns dynamically from the activities data (no more hard-coded land/labor/nitrogen), so summaries always match user-defined resources.</li>
+<li>Builder activity columns populate safely even when the activity table is empty, preventing the “replacement has 1 row, data has 0” error when adding the first resource.</li>
+<li>Added test coverage for empty activity tables and base64 handoff parsing.</li>
+</ul><hr></div>
+</div>
+    <div class="section level2">
 <h2 class="page-header" data-toc-text="0.0.0.9002" id="ram-0009002-2025-11-07">
 <a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9002" class="external-link">ram 0.0.0.9002</a> <small>2025-11-07</small>
 <a class="anchor" aria-label="anchor" href="#ram-0009002-2025-11-07"></a></h2>
 <div class="section level3">
-<h3 id="id_-new-features--enhancements-0-0-0-9002">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#id_-new-features--enhancements-0-0-0-9002"></a></h3>
+<h3 id="wrench-new-features--enhancements-0-0-0-9002">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#wrench-new-features--enhancements-0-0-0-9002"></a></h3>
 <ul><li>
 <strong>Builder ➜ Solver hand-off</strong>: the builder sidebar now exposes an “Open In Solver” button that serializes the current tables to JSON, opens a solve-mode session, and auto-loads the structures via URL query parsing—no manual CSV round-trips.</li>
 <li>
@@ -71,7 +83,7 @@
 <a href="https://github.com/PAS-AGRO-PAS/ram/releases/tag/v0.0.0.9001" class="external-link">ram 0.0.0.9001</a> <small>2025-06-30</small>
 <a class="anchor" aria-label="anchor" href="#ram-0009001-2025-06-30"></a></h2>
 <div class="section level3">
-<h3 id="id_-new-features--enhancements-0-0-0-9001">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#id_-new-features--enhancements-0-0-0-9001"></a></h3>
+<h3 id="wrench-new-features--enhancements-0-0-0-9001">🔧 New Features &amp; Enhancements<a class="anchor" aria-label="anchor" href="#wrench-new-features--enhancements-0-0-0-9001"></a></h3>
 <ul><li>
 <strong>Unified app launcher</strong>: <code>run_app(mode = "solve")</code> or <code>run_app(mode = "builder")</code>, which sets <code>app_mode</code> via <a href="https://thinkr-open.github.io/golem/" class="external-link">golem</a> and ensures external resources are initialized correctly.</li>
 <li>
@@ -119,7 +131,7 @@
 </ul></li>
 </ul><hr></div>
 <div class="section level3">
-<h3 id="id_-previous--0-0-0-9001">🧩 Previous (0.0.0.9000 – 2025-06-26)<a class="anchor" aria-label="anchor" href="#id_-previous--0-0-0-9001"></a></h3>
+<h3 id="jigsaw-previous--0-0-0-9001">🧩 Previous (0.0.0.9000 – 2025-06-26)<a class="anchor" aria-label="anchor" href="#jigsaw-previous--0-0-0-9001"></a></h3>
 <ul><li>Core functions:
 <ul><li>
 <code><a href="../reference/define_resources.html">define_resources()</a></code>, <code><a href="../reference/define_activities.html">define_activities()</a></code>, <code><a href="../reference/create_ram_model.html">create_ram_model()</a></code>, <code><a href="../reference/solve_ram.html">solve_ram()</a></code>, <code><a href="../reference/sensitivity_ram.html">sensitivity_ram()</a></code>, <code><a href="../reference/plot_ram.html">plot_ram()</a></code>
