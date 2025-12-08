@@ -16,11 +16,11 @@ mod_builder_sidebar_ui <- function(id) {
     fluidRow(
       column(
         width = 6,
-        actionButton(ns("add_res"), "➕ Add", width = "100%")
+        actionButton(ns("add_res"), "+ Add", width = "100%")
       ),
       column(
         width = 6,
-        actionButton(ns("del_res"), "🗑 Remove", width = "100%")
+        actionButton(ns("del_res"), "Remove", width = "100%")
       )
     ),
     tags$hr(),
@@ -37,16 +37,16 @@ mod_builder_sidebar_ui <- function(id) {
     tags$hr(),
     h4("Activities"),
     textInput( ns("act_name"), "Name",            ""  ),
-    numericInput(ns("act_obj"), "Objective €/unit",0),
+    numericInput(ns("act_obj"), "Objective (EUR/unit)",0),
     uiOutput(   ns("coef_inputs") ),    # dynamic UI
     fluidRow(
       column(
         width = 6,
-        actionButton(ns("add_act"),  "➕ Add",   width = "100%")
+        actionButton(ns("add_act"),  "+ Add",   width = "100%")
       ),
       column(
         width = 6,
-        actionButton(ns("del_act"),  "🗑 Remove",width = "100%")
+        actionButton(ns("del_act"),  "Remove",width = "100%")
       )
     ),
     tags$hr(),

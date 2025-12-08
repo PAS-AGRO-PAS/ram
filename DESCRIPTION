@@ -1,7 +1,7 @@
 Package: ram
 Type: Package
 Title: Resource Allocation Models for Agro-Pastoral Systems
-Version: 0.0.0.9001
+Version: 0.0.0.9003
 Authors@R: c(
     person("Vasco", "Cadavez", email = "vcadavez@ipb.pt", role = c("aut", "cre")),
     person("Ursula", "Gonzales-Barron", email = "ubarron@ipb.pt", role = "aut"))
@@ -29,7 +29,10 @@ Suggests:
     rmarkdown,
     htmltools,
     testthat,
-    pkgdown
+    pkgdown,
+    stringr,
+    tibble,
+    tidyr
 Encoding: UTF-8
 VignetteBuilder: knitr
 Config/testthat/edition: 3

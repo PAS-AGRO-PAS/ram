@@ -2,7 +2,7 @@
 % Please edit documentation in R/scenarios.R
 \name{run_scenarios}
 \alias{run_scenarios}
-\title{Run a batch of resource‐allocation scenarios}
+\title{Run a batch of resource-allocation scenarios}
 \usage{
 run_scenarios(res_def, act_def, scenario_list, direction = "max")
 }
@@ -22,5 +22,5 @@ the achieved objective, and one column per activity giving the
 optimal level of that activity.
 }
 \description{
-Run a batch of resource‐allocation scenarios
+Run a batch of resource-allocation scenarios
 }

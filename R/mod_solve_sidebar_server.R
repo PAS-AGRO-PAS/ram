@@ -2,7 +2,7 @@
 
 #' Solve Sidebar Server Module
 #'
-#' @description Server logic for the “solve” sidebar: download templates,
+#' @description Server logic for the "solve" sidebar: download templates,
 #'   upload CSVs, and trigger the solver.
 #' @param id Module namespace ID
 #' @param rv ReactiveValues list containing `resources`, `activities`, and `solution`
@@ -125,7 +125,7 @@ mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) 
       rv$solver_status <- list(
         state = "running",
         code = NA_integer_,
-        message = "Solving…"
+        message = "Solving..."
       )
       tryCatch(
         {

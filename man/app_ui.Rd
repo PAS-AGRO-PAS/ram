@@ -6,6 +6,9 @@
 \usage{
 app_ui(request)
 }
+\arguments{
+\item{request}{Shiny request object (used to detect query parameters)}
+}
 \description{
 The application User-Interface
 }

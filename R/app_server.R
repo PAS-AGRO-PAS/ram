@@ -21,7 +21,7 @@ app_server <- function(input, output, session) {
     tags$div(
       style = "display:flex; align-items:center;",
       tags$img(src = "www/logo.png", height = "60px", alt = "PAS-AGRO-PAS"),
-      tags$span(" PAS-AGRO-PAS – ram app", class = "fs-4 ms-2")
+      tags$span(" PAS-AGRO-PAS - ram app", class = "fs-4 ms-2")
     )
   })
   
@@ -233,7 +233,7 @@ app_server <- function(input, output, session) {
       state,
       success = "Optimal solution",
       error   = "Solver issue",
-      running = "Solving…",
+      running = "Solving...",
       dirty   = "Needs solve",
       "Idle"
     )

@@ -121,7 +121,7 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
         "ram-open-solver",
         list(payload = payload_b64, encoding = "base64")
       )
-      shiny::showNotification("Opening solver with your current builder tables…", type = "message")
+      shiny::showNotification("Opening solver with your current builder tables...", type = "message")
     })
   })
 }

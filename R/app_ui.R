@@ -2,6 +2,7 @@
 
 #' The application User-Interface
 #'
+#' @param request Shiny request object (used to detect query parameters)
 #' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel mainPanel tabsetPanel uiOutput
 #' @importFrom bslib input_dark_mode bs_theme
 #' @importFrom DT DTOutput
@@ -102,7 +103,7 @@ solve_panels <- function() {
                 </div>
                 <p style="font-size:15px;">
                    This research was carried out within the framework of the PAS-AGRO-PAS project. The PAS-AGRO-PAS is part of the PRIMA program supported by the European Union.
-                   This project received funding from the Fundação para a Ciência e Tecnologia (FCT), and other National Funding Agencies as part of the PRIMA program.
+                   This project received funding from the Fundacao para a Ciencia e Tecnologia (FCT), and other National Funding Agencies as part of the PRIMA program.
                  </p>
                  ')
     ),
@@ -152,7 +153,7 @@ builder_panels <- function() {
                 <b>Step 3:</b> <i>Once both tables are complete</i>, you can export them for later use in the solver app.<br>
              </p>
              <p>
-                <b>Resources Table:</b> Each row represents a constraint (e.g., land ≤ 100 ha, labor ≤ 200 hours, nitrogen = 350 Kg).<br>
+                <b>Resources Table:</b> Each row represents a constraint (e.g., land <= 100 ha, labor <= 200 hours, nitrogen = 350 Kg).<br>
                 <b>Activities Table:</b> Each row defines an activity, with the corresponding use of each resource and a target value (e.g., cost or profit).<br>
              </p>
              <p>
@@ -168,7 +169,7 @@ builder_panels <- function() {
             </div>
             <p style="font-size:15px;">
                This research was carried out within the framework of the PAS-AGRO-PAS project. The PAS-AGRO-PAS is part of the PRIMA program supported by the European Union.
-               This project received funding from the Fundação para a Ciência e Tecnologia (FCT), and other National Funding Agencies as part of the PRIMA program.
+               This project received funding from the Fundacao para a Ciencia e Tecnologia (FCT), and other National Funding Agencies as part of the PRIMA program.
              </p>
              ')
     ),

@@ -1,6 +1,6 @@
 # R/scenarios.R
 
-#' Run a batch of resource‐allocation scenarios
+#' Run a batch of resource-allocation scenarios
 #'
 #' @param res_def A resources spec as returned by define_resources()
 #' @param act_def An activities spec as returned by define_activities()
@@ -38,7 +38,7 @@ run_scenarios <- function(res_def, act_def, scenario_list, direction="max") {
     # d) gather the scalar objective
     obj  <- sol$objective_value
     
-    # e) extract the named activity levels into a 1×N data.frame
+    # e) extract the named activity levels into a 1xN data.frame
     levels <- sol$optimal_activities
     df_lv  <- as.data.frame(t(levels), stringsAsFactors = FALSE)
     df_lv[] <- lapply(df_lv, as.numeric)
@@ -53,6 +53,6 @@ run_scenarios <- function(res_def, act_def, scenario_list, direction="max") {
     )
   })
   
-  # 3) row‐bind all scenarios into one frame
+  # 3) row-bind all scenarios into one frame
   do.call(rbind, out_list)
 }

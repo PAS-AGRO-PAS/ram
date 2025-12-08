@@ -4,6 +4,6 @@
 \alias{namespace-overrides}
 \title{Namespace Overrides for DT - Shiny}
 \description{
-We want to use DT’s versions of the table-output functions,
-not shiny’s. This tells R to import all of shiny except those.
+We want to use DT's versions of the table-output functions,
+not shiny's. This tells R to import all of shiny except those.
 }

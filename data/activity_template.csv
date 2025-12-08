@@ -1,6 +1,0 @@
-"activity","land","labor","nitrogen","oat_min","oat_max","barley_min","barley_max","lupin_min","lupin_max","fava_min","fava_max","pasture_min","pasture_max","objective"
-"oat",1,20,80,1,1,0,0,0,0,0,0,0,0,400
-"barley",1,25,100,0,0,1,1,0,0,0,0,0,0,450
-"lupin",1,15,0,0,0,0,0,1,1,0,0,0,0,350
-"fava",1,30,30,0,0,0,0,0,0,1,1,0,0,500
-"pasture",1,10,0,0,0,0,0,0,0,0,0,1,1,360
