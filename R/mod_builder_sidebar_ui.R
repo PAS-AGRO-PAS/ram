@@ -13,22 +13,54 @@ mod_builder_sidebar_ui <- function(id) {
     textInput( ns("res_name"),  "Name",          ""           ),
     numericInput(ns("res_avail"), "Availability", 0, min = 0),
     selectInput( ns("res_dir"),   "Direction",    c("<=", ">=")),
-    actionButton(ns("add_res"),   "➕ Add Resource",   width="70%"),
-    actionButton(ns("del_res"),   "🗑 Remove Resource",width="70%"),
+    fluidRow(
+      column(
+        width = 6,
+        actionButton(ns("add_res"), "➕ Add", width = "100%")
+      ),
+      column(
+        width = 6,
+        actionButton(ns("del_res"), "🗑 Remove", width = "100%")
+      )
+    ),
     tags$hr(),
-    downloadButton(ns("download_res_csv"),  "Export Resources CSV",  width="70%"),
-    downloadButton(ns("download_res_xlsx"), "Export Resources XLSX", width="70%"),
+    fluidRow(
+      column(
+        width = 6,
+        downloadButton(ns("download_res_csv"),  "Export CSV",  width = "100%")
+      ),
+      column(
+        width = 6,
+        downloadButton(ns("download_res_xlsx"), "Export XLSX", width = "100%")
+      )
+    ),
     tags$hr(),
     h4("Activities"),
     textInput( ns("act_name"), "Name",            ""  ),
     numericInput(ns("act_obj"), "Objective €/unit",0),
     uiOutput(   ns("coef_inputs") ),    # dynamic UI
-    actionButton(ns("add_act"),  "➕ Add Activity",   width="70%"),
-    actionButton(ns("del_act"),  "🗑 Remove Activity",width="70%"),
+    fluidRow(
+      column(
+        width = 6,
+        actionButton(ns("add_act"),  "➕ Add",   width = "100%")
+      ),
+      column(
+        width = 6,
+        actionButton(ns("del_act"),  "🗑 Remove",width = "100%")
+      )
+    ),
     tags$hr(),
-    downloadButton(ns("download_act_csv"),  "Export Activities CSV",  width="70%"),
-    downloadButton(ns("download_act_xlsx"), "Export Activities XLSX", width="70%"),
+    fluidRow(
+      column(
+        width = 6,
+        downloadButton(ns("download_act_csv"),  "Export CSV",  width = "100%")
+      ),
+      column(
+        width = 6,
+        downloadButton(ns("download_act_xlsx"), "Export XLSX", width = "100%")
+      )
+    ),
     tags$hr(),
-    actionButton(ns("handoff_solver"), "Open In Solver", icon = icon("share-from-square"), width = "70%")
+    actionButton(ns("handoff_solver"), "Open In Solver", icon = icon("share-from-square"), width = "100%")
   )
 }

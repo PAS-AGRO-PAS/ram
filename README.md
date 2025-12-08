@@ -77,6 +77,17 @@ initializes external resources (logo, theming) automatically.
 
 ------------------------------------------------------------------------
 
+# For reviewers (JOSS/readers)
+
+- Install: `remotes::install_github("PAS-AGRO-PAS/ram")`
+- Run tests: `testthat::test_local()` (from the repo root)
+- Launch app: `ram::run_app(mode = "solve")` and
+  `ram::run_app(mode = "builder")`
+- Example data: defaults load automatically; additional scenarios live
+  in `vignettes/`.
+
+------------------------------------------------------------------------
+
 # Programmatic Usage Example
 
 ## Define the resources

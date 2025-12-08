@@ -16,9 +16,17 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
   moduleServer(id, function(input, output, session) {
     # Add a new resource and immediately update the DT
     observeEvent(input$add_res, {
-      req(input$res_name)
+      res_name <- trimws(if (is.null(input$res_name)) "" else input$res_name)
+      if (!nzchar(res_name)) {
+        shiny::showNotification("Please enter a resource name before adding.", type = "error")
+        return()
+      }
+      if (res_name %in% rv$builder_resources$Name) {
+        shiny::showNotification("Resource names must be unique.", type = "error")
+        return()
+      }
       new <- data.frame(
-        Name         = input$res_name,
+        Name         = res_name,
         Availability = input$res_avail,
         Direction    = input$res_dir,
         stringsAsFactors = FALSE
@@ -32,28 +40,17 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
       DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
     })
     
-    # Remove selected resource and update the DT
-    observeEvent(input$del_res, {
-      sel <- input$res_tbl_rows_selected
-      if (length(sel)) {
-        removed <- rv$builder_resources$Name[sel]
-        rv$builder_resources <- rv$builder_resources[-sel, , drop = FALSE]
-        DT::replaceData(builder_res_proxy, rv$builder_resources, resetPaging = FALSE)
-        if (length(removed)) {
-          keep_cols <- setdiff(names(rv$builder_activities), removed)
-          rv$builder_activities <- rv$builder_activities[, keep_cols, drop = FALSE]
-          rv$builder_activities <- ensure_builder_activity_columns(
-            rv$builder_activities,
-            rv$builder_resources$Name
-          )
-          DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
-        }
-      }
-    })
-    
     # Add a new activity and update its DT
     observeEvent(input$add_act, {
-      req(input$act_name)
+      act_name <- trimws(if (is.null(input$act_name)) "" else input$act_name)
+      if (!nzchar(act_name)) {
+        shiny::showNotification("Please enter an activity name before adding.", type = "error")
+        return()
+      }
+      if (act_name %in% rv$builder_activities$Name) {
+        shiny::showNotification("Activity names must be unique.", type = "error")
+        return()
+      }
       if (!nrow(rv$builder_resources)) {
         shiny::showNotification("Add at least one resource before defining activities.", type = "error")
         return()
@@ -67,7 +64,7 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
         numeric(1)
       )
       new <- data.frame(
-        Name      = input$act_name,
+        Name      = act_name,
         Objective = input$act_obj,
         t(coefs),
         stringsAsFactors = FALSE
@@ -75,15 +72,6 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
       names(new)[-(1:2)] <- rv$builder_resources$Name
       rv$builder_activities <- bind_rows(rv$builder_activities, new)
       DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
-    })
-    
-    # Remove selected activity and update its DT
-    observeEvent(input$del_act, {
-      sel <- input$act_tbl_rows_selected
-      if (length(sel)) {
-        rv$builder_activities <- rv$builder_activities[-sel, , drop = FALSE]
-        DT::replaceData(builder_act_proxy, rv$builder_activities, resetPaging = FALSE)
-      }
     })
     
     # Dynamic coefficient inputs
@@ -141,16 +129,29 @@ mod_builder_sidebar_server <- function(id, rv, builder_res_proxy, builder_act_pr
 ensure_builder_activity_columns <- function(df, resource_names) {
   df <- as.data.frame(df, stringsAsFactors = FALSE)
   base_cols <- c("Name", "Objective")
-  if (!length(resource_names)) {
+  clean_resources <- unique(trimws(resource_names))
+  clean_resources <- clean_resources[!is.na(clean_resources) & nzchar(clean_resources)]
+  n_rows <- nrow(df)
+  if (is.null(n_rows) || length(n_rows) == 0 || is.na(n_rows)) {
+    n_rows <- 0
+  }
+  if (!all(base_cols %in% names(df))) {
+    missing_base <- setdiff(base_cols, names(df))
+    defaults <- list(
+      Name = rep("", n_rows),
+      Objective = rep(0, n_rows)
+    )
+    df[missing_base] <- defaults[missing_base]
+  }
+  if (!length(clean_resources)) {
     return(df[, intersect(names(df), base_cols), drop = FALSE])
   }
-  n_rows <- nrow(df)
-  missing <- setdiff(resource_names, names(df))
+  missing <- setdiff(clean_resources, names(df))
   if (length(missing)) {
     # Fill all missing resource columns at once; works even with zero rows
-    df[missing] <- rep(list(rep(0, n_rows)), length(missing))
+    df[missing] <- replicate(length(missing), numeric(n_rows), simplify = FALSE)
   }
-  ordered_cols <- c(base_cols, resource_names)
+  ordered_cols <- c(base_cols, clean_resources)
   keep <- intersect(ordered_cols, names(df))
   df[, keep, drop = FALSE]
 }

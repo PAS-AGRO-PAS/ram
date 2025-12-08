@@ -17,6 +17,16 @@ test_that("validate_resource_upload rejects missing columns", {
   expect_error(ram:::validate_resource_upload(df))
 })
 
+test_that("validate_resource_upload rejects duplicate resources", {
+  df <- data.frame(
+    resource = c("land", "land"),
+    availability = c(1, 2),
+    direction = c("<=", "<="),
+    stringsAsFactors = FALSE
+  )
+  expect_error(ram:::validate_resource_upload(df))
+})
+
 test_that("validate_activity_upload enforces numeric columns", {
   df <- data.frame(
     activity = c("a", "b"),
@@ -35,6 +45,16 @@ test_that("validate_activity_upload enforces numeric columns", {
   expect_error(ram:::validate_activity_upload(df_bad))
 })
 
+test_that("validate_activity_upload rejects duplicate activities", {
+  df <- data.frame(
+    activity = c("a", "a"),
+    resource1 = c(1, 2),
+    objective = c(10, 20),
+    stringsAsFactors = FALSE
+  )
+  expect_error(ram:::validate_activity_upload(df))
+})
+
 test_that("ensure_builder_activity_columns maintains required structure", {
   df <- data.frame(
     Name = "act1",
@@ -51,6 +71,19 @@ test_that("ensure_builder_activity_columns works with empty activity table", {
   out <- ram:::ensure_builder_activity_columns(df, c("land"))
   expect_equal(nrow(out), 0)
   expect_true("land" %in% names(out))
+})
+
+test_that("ensure_builder_activity_columns fills base columns when missing", {
+  df <- data.frame(stringsAsFactors = FALSE)
+  out <- ram:::ensure_builder_activity_columns(df, c("land"))
+  expect_equal(names(out), c("Name", "Objective", "land"))
+  expect_equal(nrow(out), 0)
+})
+
+test_that("ensure_builder_activity_columns ignores empty or NA resource names", {
+  df <- data.frame(Name = character(), Objective = numeric(), stringsAsFactors = FALSE)
+  out <- ram:::ensure_builder_activity_columns(df, c("land", "", NA, "land"))
+  expect_equal(names(out), c("Name", "Objective", "land"))
 })
 
 test_that("parse_builder_payload accepts base64-encoded payloads", {

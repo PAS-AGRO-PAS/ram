@@ -63,7 +63,6 @@ mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) 
         code = NA_integer_,
         message = "Resources replaced from upload. Re-run the solver."
       )
-      DT::replaceData(resources_proxy, rv$resources, resetPaging = FALSE)
     })
     
     # --- Upload & replace activities table ---
@@ -90,7 +89,6 @@ mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) 
         code = NA_integer_,
         message = "Activities replaced from upload. Re-run the solver."
       )
-      DT::replaceData(activities_proxy, rv$activities, resetPaging = FALSE)
     })
     
     # --- Solve the model when the button is clicked ---
@@ -103,6 +101,27 @@ mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) 
         shiny::showNotification("Please provide at least one activity before solving.", type = "error")
         return()
       }
+      parsed_res <- tryCatch(
+        validate_resource_upload(rv$resources),
+        error = function(err) {
+          shiny::showNotification(paste("Resource table error:", err$message), type = "error")
+          rv$solver_status <- list(state = "error", code = NA_integer_, message = err$message)
+          return(NULL)
+        }
+      )
+      parsed_act <- tryCatch(
+        validate_activity_upload(rv$activities),
+        error = function(err) {
+          shiny::showNotification(paste("Activity table error:", err$message), type = "error")
+          rv$solver_status <- list(state = "error", code = NA_integer_, message = err$message)
+          return(NULL)
+        }
+      )
+      if (is.null(parsed_res) || is.null(parsed_act)) {
+        return()
+      }
+      rv$resources <- parsed_res
+      rv$activities <- parsed_act
       rv$solver_status <- list(
         state = "running",
         code = NA_integer_,
@@ -111,11 +130,11 @@ mod_solve_sidebar_server <- function(id, rv, resources_proxy, activities_proxy) 
       tryCatch(
         {
           res_def <- define_resources(
-            resources    = rv$resources$resource,
-            availability = as.numeric(rv$resources$availability),
-            direction    = rv$resources$direction
+            resources    = parsed_res$resource,
+            availability = as.numeric(parsed_res$availability),
+            direction    = parsed_res$direction
           )
-          acts     <- rv$activities
+          acts     <- parsed_act
           techCols <- setdiff(names(acts), c("activity", "objective"))
           techMat  <- t(as.matrix(acts[, techCols, drop = FALSE]))
           colnames(techMat) <- acts$activity
@@ -175,6 +194,9 @@ validate_resource_upload <- function(df) {
   if (anyNA(df$resource) || any(df$resource == "")) {
     stop("All resources must have a non-empty name.")
   }
+  if (any(duplicated(df$resource))) {
+    stop("Resource names must be unique.")
+  }
   df$availability <- suppressWarnings(as.numeric(df$availability))
   if (anyNA(df$availability)) {
     stop("Availability must be numeric for every resource.")
@@ -195,6 +217,9 @@ validate_activity_upload <- function(df) {
   df$activity <- trimws(as.character(df$activity))
   if (anyNA(df$activity) || any(df$activity == "")) {
     stop("All activities must have a non-empty name.")
+  }
+  if (any(duplicated(df$activity))) {
+    stop("Activity names must be unique.")
   }
   df$objective <- suppressWarnings(as.numeric(df$objective))
   if (anyNA(df$objective)) {

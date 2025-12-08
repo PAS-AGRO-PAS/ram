@@ -108,9 +108,31 @@ app_server <- function(input, output, session) {
   output$activities_table <- DT::renderDT({
     DT::datatable(rv$activities, rownames = FALSE, editable = TRUE)
   })
+  # Keep tables alive when tabs are hidden and keep them in sync with rv
+  outputOptions(output, "resources_table", suspendWhenHidden = FALSE)
+  outputOptions(output, "activities_table", suspendWhenHidden = FALSE)
   observeEvent(input$resources_table_cell_edit, {
     info <- input$resources_table_cell_edit
-    rv$resources <- DT::editData(rv$resources, info, proxy = resources_proxy, resetPaging = FALSE)
+    prev <- rv$resources
+    edited <- DT::editData(rv$resources, info, proxy = resources_proxy, resetPaging = FALSE)
+    parsed <- tryCatch(
+      validate_resource_upload(edited),
+      error = function(err) {
+        shiny::showNotification(paste("Invalid resource edit:", err$message), type = "error")
+        DT::replaceData(resources_proxy, prev, resetPaging = FALSE)
+        rv$solver_status <- list(
+          state = "error",
+          code = NA_integer_,
+          message = err$message
+        )
+        return(NULL)
+      }
+    )
+    if (is.null(parsed)) {
+      return()
+    }
+    rv$resources <- parsed
+    DT::replaceData(resources_proxy, rv$resources, resetPaging = FALSE)
     rv$solution <- NULL
     rv$solver_status <- list(
       state = "dirty",
@@ -120,7 +142,26 @@ app_server <- function(input, output, session) {
   })
   observeEvent(input$activities_table_cell_edit, {
     info <- input$activities_table_cell_edit
-    rv$activities <- DT::editData(rv$activities, info, proxy = activities_proxy, resetPaging = FALSE)
+    prev <- rv$activities
+    edited <- DT::editData(rv$activities, info, proxy = activities_proxy, resetPaging = FALSE)
+    parsed <- tryCatch(
+      validate_activity_upload(edited),
+      error = function(err) {
+        shiny::showNotification(paste("Invalid activity edit:", err$message), type = "error")
+        DT::replaceData(activities_proxy, prev, resetPaging = FALSE)
+        rv$solver_status <- list(
+          state = "error",
+          code = NA_integer_,
+          message = err$message
+        )
+        return(NULL)
+      }
+    )
+    if (is.null(parsed)) {
+      return()
+    }
+    rv$activities <- parsed
+    DT::replaceData(activities_proxy, rv$activities, resetPaging = FALSE)
     rv$solution <- NULL
     rv$solver_status <- list(
       state = "dirty",
@@ -157,7 +198,7 @@ app_server <- function(input, output, session) {
       DT::datatable(
         df,
         rownames = FALSE,
-        options = list(dom = "t")
+        options = list(dom = "t", scrollX = TRUE)
       ) %>%
         DT::formatRound(numeric_cols, 1)
     } else {
@@ -169,7 +210,7 @@ app_server <- function(input, output, session) {
       DT::datatable(
         rbind(df, total),
         rownames = FALSE,
-        options = list(dom = "t")
+        options = list(dom = "t", scrollX = TRUE)
       ) %>%
         DT::formatRound("Level", 1)
     }

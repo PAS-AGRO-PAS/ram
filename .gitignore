@@ -4,3 +4,7 @@
 .Ruserdata
 /doc/
 /Meta/
+paper.md
+paper.Rmd
+paper.bib
+README.Rmd
